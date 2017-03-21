@@ -4,6 +4,7 @@ prep:
 self:   prep
 	if test -d src/github.com/thisisaaronland/go-artisanal-integers; then rm -rf src/github.com/thisisaaronland/go-artisanal-integers; fi
 	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/engine
+	cp *.go src/github.com/thisisaaronland/go-artisanal-integers/
 	cp engine/*.go src/github.com/thisisaaronland/go-artisanal-integers/engine/
 	cp -r vendor/src/* src/
 
@@ -11,8 +12,8 @@ rmdeps:
 	if test -d src; then rm -rf src; fi 
 
 deps:
-	# @GOPATH=$(shell pwd) go get "github.com/go-sql-driver/mysql"
-	# @GOPATH=$(shell pwd) go get "github.com/garyburd/redigo/redis"
+	@GOPATH=$(shell pwd) go get "github.com/go-sql-driver/mysql"
+	@GOPATH=$(shell pwd) go get "github.com/garyburd/redigo/redis"
 
 vendor-deps: rmdeps deps
 	if test ! -d vendor; then mkdir vendor; fi
@@ -24,3 +25,6 @@ vendor-deps: rmdeps deps
 fmt:
 	go fmt *.go
 	go fmt engine/*.go
+
+bin:    self
+        @GOPATH=$(shell pwd) go build -o bin/int cmd/int.go

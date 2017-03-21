@@ -5,11 +5,8 @@ package engine
 import (
 	"database/sql"
 	"database/sql/driver"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/thisisaaronland/go-artisanal-integers"
-	"strconv"
-	"sync"
 )
 
 type MySQLEngine struct {
@@ -20,31 +17,21 @@ type MySQLEngine struct {
 
 func (eng *MySQLEngine) Set(i int64) error {
 
-	db, err := &eng.Connect()
+	db, err := eng.connect()
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	defer db.Close()
 
+	// FIX ME
+	return nil
 }
 
 func (eng *MySQLEngine) Max() (int64, error) {
 
-	db, err := &eng.Connect()
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer db.Close()
-
-}
-
-func (eng *MySQLEngine) Next() (int64, error) {
-
-	db, err := &eng.Connect()
+	db, err := eng.connect()
 
 	if err != nil {
 		return -1, err
@@ -52,7 +39,7 @@ func (eng *MySQLEngine) Next() (int64, error) {
 
 	defer db.Close()
 
-	st, err := db.Prepare("REPLACE IN ? (stub) VALUES(?)")
+	st, err := db.Prepare("SELECT MAX(id) FROM ?")
 
 	if err != nil {
 		return -1, err
@@ -60,19 +47,77 @@ func (eng *MySQLEngine) Next() (int64, error) {
 
 	defer st.Close()
 
-	_, err = st.Exec(eng.table, "a")
+	row, err = st.Exec(eng.table)
 
 	if err != nil {
 		return -1, err
 	}
 
-	// https://dev.mysql.com/doc/refman/5.7/en/getting-unique-id.html
-	// TO DO: get insert ID
+	var max int64
+
+	err = row.Scan(&max)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return max, nil
+}
+
+// https://dev.mysql.com/doc/refman/5.7/en/getting-unique-id.html
+	
+func (eng *MySQLEngine) Next() (int64, error) {
+
+	db, err := eng.connect()
+
+	if err != nil {
+		return -1, err
+	}
+
+	defer db.Close()
+
+	st_replace, err := db.Prepare("REPLACE IN ? (stub) VALUES(?)")
+
+	if err != nil {
+		return -1, err
+	}
+
+	defer st_replace.Close()
+
+	_, err = st_replace.Exec(eng.table, "a")
+
+	if err != nil {
+		return -1, err
+	}
+
+	st_last, err := db.Prepare("SELECT LAST_INSERT_ID()")
+
+	if err != nil {
+		return -1, err
+	}
+
+	defer st_last.Close()
+
+	row, err = st_last.Exec()
+
+	if err != nil {
+		return -1, err
+	}
+
+	var next int64
+
+	err = row.Scan(&next)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return next, nil
 }
 
 func (eng *MySQLEngine) set_autoincrement() error {
 
-	db, err := &eng.Connect()
+	db, err := eng.connect()
 
 	if err != nil {
 		return err
