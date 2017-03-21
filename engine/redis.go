@@ -16,7 +16,7 @@ type RedisEngine struct {
 	mu     *sync.Mutex
 }
 
-func (eng *SummitDBEngine) Set(i int64) error {
+func (eng *RedisEngine) Set(i int64) error {
 
 	eng.mu.Lock()
 	defer m.mu.Unlock()
