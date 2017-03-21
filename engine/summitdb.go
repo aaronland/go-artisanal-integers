@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"strconv"
@@ -80,15 +79,13 @@ func (eng *SummitDBEngine) Next() (int64, error) {
 	return i, nil
 }
 
-func NewSummitDBEngine(host string, port int, key string, incrby int) (*SummitDBEngine, error) {
-
-	db_endpoint := fmt.Sprintf("%s:%d", addr, port)
+func NewSummitDBEngine(redis_url string, key string, incrby int) (*SummitDBEngine, error) {
 
 	pool := &redis.Pool{
 		MaxActive: 1000,
 		Dial: func() (redis.Conn, error) {
 
-			c, err := redis.Dial("tcp", db_endpoint)
+			c, err := redis.DialURL(redis_url)
 
 			if err != nil {
 				return nil, err
