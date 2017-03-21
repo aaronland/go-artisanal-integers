@@ -14,7 +14,7 @@ import (
 
 type MySQLEngine struct {
 	artisanalinteger.Engine
-	dsn string
+	dsn   string
 	table string
 }
 
@@ -66,6 +66,7 @@ func (eng *MySQLEngine) Next() (int64, error) {
 		return -1, err
 	}
 
+	// https://dev.mysql.com/doc/refman/5.7/en/getting-unique-id.html
 	// TO DO: get insert ID
 }
 
