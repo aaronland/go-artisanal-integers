@@ -65,7 +65,7 @@ func (eng *MySQLEngine) Max() (int64, error) {
 }
 
 // https://dev.mysql.com/doc/refman/5.7/en/getting-unique-id.html
-	
+
 func (eng *MySQLEngine) Next() (int64, error) {
 
 	db, err := eng.connect()
