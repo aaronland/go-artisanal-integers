@@ -6,7 +6,7 @@ type Engine interface {
 	Set(int64) error
 }
 
-type Integer interface {
+type Service interface {
 	Next() (int64, error)
 	Max() (int64, error)
 }
