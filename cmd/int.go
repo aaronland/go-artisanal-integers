@@ -2,23 +2,35 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"github.com/thisisaaronland/go-artisanal-integers"
 	"github.com/thisisaaronland/go-artisanal-integers/engine"
 	"log"
 )
 
 func main() {
 
-	var engine = flag.String("engine", "", "...")
+	var db = flag.String("database", "", "...")
+	var dsn = flag.String("dsn", "", "...")
 
-	switch *engine {
+	var eng artisanalinteger.Engine
+	var err error
+
+	switch *db {
 
 	case "redis":
-		log.Println(*engine)
+		eng, err = engine.NewRedisEngine()
 	case "summitdb":
-		log.Println(*engine)
+		eng, err = engine.NewSummitDBEngine()
 	case "mysql":
-		log.Println(*engine)
+		eng, err = engine.NewMySQLEngine()
 	default:
 		log.Fatal("Invalid engine")
 	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(eng.Next())
 }

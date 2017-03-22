@@ -4,7 +4,6 @@ package engine
 
 import (
 	"database/sql"
-	"database/sql/driver"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/thisisaaronland/go-artisanal-integers"
 )
@@ -39,23 +38,17 @@ func (eng *MySQLEngine) Max() (int64, error) {
 
 	defer db.Close()
 
-	st, err := db.Prepare("SELECT MAX(id) FROM ?")
+	rows, err := db.Query("SELECT MAX(id) FROM integers")
 
 	if err != nil {
 		return -1, err
 	}
 
-	defer st.Close()
-
-	row, err = st.Exec(eng.table)
-
-	if err != nil {
-		return -1, err
-	}
+	defer rows.Close()
 
 	var max int64
 
-	err = row.Scan(&max)
+	err = rows.Scan(&max)
 
 	if err != nil {
 		return -1, err
@@ -76,7 +69,7 @@ func (eng *MySQLEngine) Next() (int64, error) {
 
 	defer db.Close()
 
-	st_replace, err := db.Prepare("REPLACE IN ? (stub) VALUES(?)")
+	st_replace, err := db.Prepare("REPLACE IN integers (stub) VALUES(?)")
 
 	if err != nil {
 		return -1, err
@@ -84,29 +77,19 @@ func (eng *MySQLEngine) Next() (int64, error) {
 
 	defer st_replace.Close()
 
-	_, err = st_replace.Exec(eng.table, "a")
+	_, err = st_replace.Exec("a")
 
 	if err != nil {
 		return -1, err
 	}
 
-	st_last, err := db.Prepare("SELECT LAST_INSERT_ID()")
+	rows, err := db.Query("SELECT LAST_INSERT_ID()")
 
-	if err != nil {
-		return -1, err
-	}
-
-	defer st_last.Close()
-
-	row, err = st_last.Exec()
-
-	if err != nil {
-		return -1, err
-	}
+	defer rows.Close()
 
 	var next int64
 
-	err = row.Scan(&next)
+	err = rows.Scan(&next)
 
 	if err != nil {
 		return -1, err
@@ -156,12 +139,12 @@ func (eng *MySQLEngine) set_autoincrement() error {
 	return nil
 }
 
-func (eng *MySQLEngine) connect() (driver.Conn, err) {
+func (eng *MySQLEngine) connect() (*sql.DB, error) {
 
 	db, err := sql.Open("mysql", eng.dsn)
 
 	if err != nil {
-		return nil, er
+		return nil, err
 	}
 
 	return db, nil
@@ -169,12 +152,12 @@ func (eng *MySQLEngine) connect() (driver.Conn, err) {
 
 func NewMySQLEngine(dsn string, table string) (*MySQLEngine, error) {
 
-	eng := MySQLEngine{
+	eng := &MySQLEngine{
 		dsn:   dsn,
 		table: table,
 	}
 
-	db, err := &eng.Connect()
+	db, err := eng.connect()
 
 	if err != nil {
 		return nil, err
@@ -185,8 +168,8 @@ func NewMySQLEngine(dsn string, table string) (*MySQLEngine, error) {
 	err = db.Ping()
 
 	if err != nil {
-		return nil, er
+		return nil, err
 	}
 
-	return &eng, nil
+	return eng, nil
 }

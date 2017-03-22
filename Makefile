@@ -28,4 +28,4 @@ fmt:
 	go fmt engine/*.go
 
 bin:    self
-        @GOPATH=$(shell pwd) go build -o bin/int cmd/int.go
+	@GOPATH=$(shell pwd) go build -o bin/int cmd/int.go

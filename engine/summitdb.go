@@ -18,24 +18,24 @@ type SummitDBEngine struct {
 func (eng *SummitDBEngine) Set(i int64) error {
 
 	eng.mu.Lock()
-	defer m.mu.Unlock()
+	defer eng.mu.Unlock()
 
 	conn := eng.pool.Get()
 	defer conn.Close()
 
-	_, err := conn.Do("SET", m.key, i)
+	_, err := conn.Do("SET", eng.key, i)
 	return err
 }
 
 func (eng *SummitDBEngine) Max() (int64, error) {
 
 	eng.mu.Lock()
-	defer m.mu.Unlock()
+	defer eng.mu.Unlock()
 
 	conn := eng.pool.Get()
 	defer conn.Close()
 
-	redis_rsp, err := conn.Do("GET", m.key)
+	redis_rsp, err := conn.Do("GET", eng.key)
 
 	if err != nil {
 		return -1, err
