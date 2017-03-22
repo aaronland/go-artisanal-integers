@@ -6,6 +6,16 @@ No, really.
 
 This is absolutely _not_ ready for use yet. For example the `mysql` engine compiles but has not been properly tested yet. Likewise interfaces (for integer `Engine` thingies) have not been finalized either.
 
+## Install
+
+You will need to have both `Go` and the `make` programs installed on your computer. Assuming you do just type:
+
+```
+make bin
+```
+
+All of this package's dependencies are bundled with the code in the `vendor` directory.
+
 ## Usage
 
 ### Simple
