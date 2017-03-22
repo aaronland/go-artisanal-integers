@@ -150,11 +150,11 @@ func (eng *MySQLEngine) connect() (*sql.DB, error) {
 	return db, nil
 }
 
-func NewMySQLEngine(dsn string, table string) (*MySQLEngine, error) {
+func NewMySQLEngine(dsn string) (*MySQLEngine, error) {
 
 	eng := &MySQLEngine{
 		dsn:   dsn,
-		table: table,
+		table: "integers",
 	}
 
 	db, err := eng.connect()

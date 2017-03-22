@@ -79,13 +79,13 @@ func (eng *SummitDBEngine) Next() (int64, error) {
 	return i, nil
 }
 
-func NewSummitDBEngine(redis_url string, key string, incrby int) (*SummitDBEngine, error) {
+func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 
 	pool := &redis.Pool{
 		MaxActive: 1000,
 		Dial: func() (redis.Conn, error) {
 
-			c, err := redis.DialURL(redis_url)
+			c, err := redis.DialURL(dsn)
 
 			if err != nil {
 				return nil, err
@@ -99,8 +99,8 @@ func NewSummitDBEngine(redis_url string, key string, incrby int) (*SummitDBEngin
 
 	eng := SummitDBEngine{
 		pool:   pool,
-		key:    key,
-		incrby: incrby,
+		key:    "integers",
+		incrby: 2,
 		mu:     mu,
 	}
 

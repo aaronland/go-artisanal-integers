@@ -79,13 +79,13 @@ func (eng *RedisEngine) Next() (int64, error) {
 	return i, nil
 }
 
-func NewRedisEngine(redis_url string, key string, incrby int) (*RedisEngine, error) {
+func NewRedisEngine(dsn string) (*RedisEngine, error) {
 
 	pool := &redis.Pool{
 		MaxActive: 1000,
 		Dial: func() (redis.Conn, error) {
 
-			c, err := redis.DialURL(redis_url)
+			c, err := redis.DialURL(dsn)
 
 			if err != nil {
 				return nil, err
@@ -99,8 +99,8 @@ func NewRedisEngine(redis_url string, key string, incrby int) (*RedisEngine, err
 
 	eng := RedisEngine{
 		pool:   pool,
-		key:    key,
-		incrby: incrby,
+		key:    "integers",
+		incrby: 2,
 		mu:     mu,
 	}
 

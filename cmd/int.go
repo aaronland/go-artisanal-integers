@@ -19,11 +19,11 @@ func main() {
 	switch *db {
 
 	case "redis":
-		eng, err = engine.NewRedisEngine()
+		eng, err = engine.NewRedisEngine(*dsn)
 	case "summitdb":
-		eng, err = engine.NewSummitDBEngine()
+		eng, err = engine.NewSummitDBEngine(*dsn)
 	case "mysql":
-		eng, err = engine.NewMySQLEngine()
+		eng, err = engine.NewMySQLEngine(*dsn)
 	default:
 		log.Fatal("Invalid engine")
 	}
