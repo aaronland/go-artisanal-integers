@@ -1,5 +1,6 @@
 package engine
 
+// http://code.flickr.com/blog/2010/02/08/ticket-servers-distributed-unique-primary-keys-on-the-cheap/
 // https://github.com/go-sql-driver/mysql
 
 import (
@@ -45,6 +46,7 @@ func (eng *MySQLEngine) Max() (int64, error) {
 	}
 
 	defer rows.Close()
+	rows.Next()
 
 	var max int64
 
@@ -69,7 +71,7 @@ func (eng *MySQLEngine) Next() (int64, error) {
 
 	defer db.Close()
 
-	st_replace, err := db.Prepare("REPLACE IN integers (stub) VALUES(?)")
+	st_replace, err := db.Prepare("REPLACE INTO integers (stub) VALUES(?)")
 
 	if err != nil {
 		return -1, err
@@ -86,6 +88,7 @@ func (eng *MySQLEngine) Next() (int64, error) {
 	rows, err := db.Query("SELECT LAST_INSERT_ID()")
 
 	defer rows.Close()
+	rows.Next()
 
 	var next int64
 

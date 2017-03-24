@@ -13,6 +13,8 @@ func main() {
 	var db = flag.String("database", "", "...")
 	var dsn = flag.String("dsn", "", "...")
 
+	flag.Parse()
+
 	var eng artisanalinteger.Engine
 	var err error
 
