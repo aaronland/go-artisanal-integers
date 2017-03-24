@@ -9,10 +9,11 @@ import (
 
 type SummitDBEngine struct {
 	artisanalinteger.Engine
-	pool   *redis.Pool
-	key    string
-	incrby int
-	mu     *sync.Mutex
+	pool      *redis.Pool
+	key       string
+	increment int64
+	offset    int64
+	mu        *sync.Mutex
 }
 
 func (eng *SummitDBEngine) SetLastId(i int64) error {
@@ -27,11 +28,13 @@ func (eng *SummitDBEngine) SetLastId(i int64) error {
 	return err
 }
 
-func (eng *SummitDBEngine) SetOffset(int64) error {
+func (eng *SummitDBEngine) SetOffset(i int64) error {
+	eng.offset = i
 	return nil
 }
 
-func (eng *SummitDBEngine) SetIncrement(int64) error {
+func (eng *SummitDBEngine) SetIncrement(i int64) error {
+	eng.increment = i
 	return nil
 }
 
@@ -72,7 +75,7 @@ func (eng *SummitDBEngine) NextId() (int64, error) {
 	conn := eng.pool.Get()
 	defer conn.Close()
 
-	redis_rsp, err := conn.Do("INCRBY", eng.key, eng.incrby)
+	redis_rsp, err := conn.Do("INCRBY", eng.key, eng.increment)
 
 	if err != nil {
 		return -1, err
@@ -106,10 +109,11 @@ func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 	mu := new(sync.Mutex)
 
 	eng := SummitDBEngine{
-		pool:   pool,
-		key:    "integers",
-		incrby: 2,
-		mu:     mu,
+		pool:      pool,
+		key:       "integers",
+		increment: 2,
+		offset:    1,
+		mu:        mu,
 	}
 
 	return &eng, nil

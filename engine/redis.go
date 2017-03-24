@@ -9,10 +9,11 @@ import (
 
 type RedisEngine struct {
 	artisanalinteger.Engine
-	pool   *redis.Pool
-	key    string
-	incrby int
-	mu     *sync.Mutex
+	pool      *redis.Pool
+	key       string
+	offset    int64
+	increment int64
+	mu        *sync.Mutex
 }
 
 func (eng *RedisEngine) SetLastId(i int64) error {
@@ -27,11 +28,13 @@ func (eng *RedisEngine) SetLastId(i int64) error {
 	return err
 }
 
-func (eng *RedisEngine) SetOffset(int64) error {
+func (eng *RedisEngine) SetOffset(i int64) error {
+	eng.offset = i
 	return nil
 }
 
-func (eng *RedisEngine) SetIncrement(int64) error {
+func (eng *RedisEngine) SetIncrement(i int64) error {
+	eng.increment = i
 	return nil
 }
 
@@ -72,7 +75,7 @@ func (eng *RedisEngine) NextId() (int64, error) {
 	conn := eng.pool.Get()
 	defer conn.Close()
 
-	redis_rsp, err := conn.Do("INCRBY", eng.key, eng.incrby)
+	redis_rsp, err := conn.Do("INCRBY", eng.key, eng.increment)
 
 	if err != nil {
 		return -1, err
@@ -106,10 +109,11 @@ func NewRedisEngine(dsn string) (*RedisEngine, error) {
 	mu := new(sync.Mutex)
 
 	eng := RedisEngine{
-		pool:   pool,
-		key:    "integers",
-		incrby: 2,
-		mu:     mu,
+		pool:      pool,
+		key:       "integers",
+		increment: 2,
+		offset:    1,
+		mu:        mu,
 	}
 
 	return &eng, nil

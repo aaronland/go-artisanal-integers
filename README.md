@@ -105,7 +105,7 @@ type Service interface {
 Generate an artisanal integer on the command line.
 
 ```
-$> ./bin/int -engine mysql -dsn '{USER}:{PSWD}/{DATABASE}'
+$> ./bin/int -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
 182583
 ```
 
@@ -114,7 +114,7 @@ $> ./bin/int -engine mysql -dsn '{USER}:{PSWD}/{DATABASE}'
 Generate an artisanal integer as a service.
 
 ```
-$> ./bin/intd -engine mysql -dsn '{USER}:{PSWD}/{DATABASE}'
+$> ./bin/intd -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
 ```
 
 And then

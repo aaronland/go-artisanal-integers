@@ -10,12 +10,13 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/thisisaaronland/go-artisanal-integers"
-	_ "log"
 )
 
 type MySQLEngine struct {
 	artisanalinteger.Engine
-	dsn string
+	dsn       string
+	offset    int64
+	increment int64
 }
 
 func (eng *MySQLEngine) SetLastId(i int64) error {
@@ -38,10 +39,14 @@ func (eng *MySQLEngine) SetLastId(i int64) error {
 
 	defer db.Close()
 
-	// why doesn't this work when I use Prepare/Exec ?
-
 	sql := fmt.Sprintf("ALTER TABLE integers AUTO_INCREMENT=%d", i)
-	_, err = db.Query(sql)
+	st, err := db.Prepare(sql)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = st.Exec()
 
 	if err != nil {
 		return err
@@ -50,11 +55,13 @@ func (eng *MySQLEngine) SetLastId(i int64) error {
 	return nil
 }
 
-func (eng *MySQLEngine) SetOffset(int64) error {
+func (eng *MySQLEngine) SetOffset(i int64) error {
+	eng.offset = i
 	return nil
 }
 
-func (eng *MySQLEngine) SetIncrement(int64) error {
+func (eng *MySQLEngine) SetIncrement(i int64) error {
+	eng.increment = i
 	return nil
 }
 
@@ -124,7 +131,8 @@ func (eng *MySQLEngine) NextId() (int64, error) {
 
 func (eng *MySQLEngine) set_autoincrement(db *sql.DB) error {
 
-	st_incr, err := db.Prepare("SET @@auto_increment_increment=2")
+	sql_incr := fmt.Sprintf("SET @@auto_increment_increment=%d", eng.increment)
+	st_incr, err := db.Prepare(sql_incr)
 
 	if err != nil {
 		return err
@@ -138,7 +146,8 @@ func (eng *MySQLEngine) set_autoincrement(db *sql.DB) error {
 		return err
 	}
 
-	st_off, err := db.Prepare("SET @@auto_increment_offset=1")
+	sql_off := fmt.Sprintf("SET @@auto_increment_offset=%d", eng.offset)
+	st_off, err := db.Prepare(sql_off)
 
 	if err != nil {
 		return err
@@ -169,7 +178,9 @@ func (eng *MySQLEngine) connect() (*sql.DB, error) {
 func NewMySQLEngine(dsn string) (*MySQLEngine, error) {
 
 	eng := &MySQLEngine{
-		dsn: dsn,
+		dsn:       dsn,
+		offset:    1,
+		increment: 2,
 	}
 
 	db, err := eng.connect()
