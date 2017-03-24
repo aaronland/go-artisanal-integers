@@ -4,8 +4,10 @@ prep:
 self:   prep
 	if test -d src/github.com/thisisaaronland/go-artisanal-integers; then rm -rf src/github.com/thisisaaronland/go-artisanal-integers; fi
 	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/engine
+	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/service
 	cp *.go src/github.com/thisisaaronland/go-artisanal-integers/
 	cp engine/*.go src/github.com/thisisaaronland/go-artisanal-integers/engine/
+	cp service/*.go src/github.com/thisisaaronland/go-artisanal-integers/service/
 	cp -r vendor/src/* src/
 
 rmdeps:
@@ -26,6 +28,7 @@ fmt:
 	go fmt *.go
 	go fmt cmd/*.go
 	go fmt engine/*.go
+	go fmt service/*.go
 
 bin:    self
 	@GOPATH=$(shell pwd) go build -o bin/int cmd/int.go

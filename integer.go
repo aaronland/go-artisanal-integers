@@ -1,12 +1,14 @@
 package artisanalinteger
 
 type Engine interface {
-	Next() (int64, error)
-	Max() (int64, error)
-	Set(int64) error
+	NextId() (int64, error)
+	LastId() (int64, error)
+	SetLastId(int64) error
+	SetOffset(int64) error
+	SetIncrement(int64) error
 }
 
 type Service interface {
-	Next() (int64, error)
-	Max() (int64, error)
+	NextId() (int64, error)
+	MaxId() (int64, error)
 }

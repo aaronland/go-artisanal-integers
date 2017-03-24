@@ -55,6 +55,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(eng.Next())
+	next, err := eng.NextId()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(next)
 }
 ```

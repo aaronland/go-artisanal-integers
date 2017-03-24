@@ -15,7 +15,7 @@ type SummitDBEngine struct {
 	mu     *sync.Mutex
 }
 
-func (eng *SummitDBEngine) Set(i int64) error {
+func (eng *SummitDBEngine) SetLastId(i int64) error {
 
 	eng.mu.Lock()
 	defer eng.mu.Unlock()
@@ -27,7 +27,15 @@ func (eng *SummitDBEngine) Set(i int64) error {
 	return err
 }
 
-func (eng *SummitDBEngine) Max() (int64, error) {
+func (eng *SummitDBEngine) SetOffset(int64) error {
+	return nil
+}
+
+func (eng *SummitDBEngine) SetIncrement(int64) error {
+	return nil
+}
+
+func (eng *SummitDBEngine) LastId() (int64, error) {
 
 	eng.mu.Lock()
 	defer eng.mu.Unlock()
@@ -56,7 +64,7 @@ func (eng *SummitDBEngine) Max() (int64, error) {
 	return i, nil
 }
 
-func (eng *SummitDBEngine) Next() (int64, error) {
+func (eng *SummitDBEngine) NextId() (int64, error) {
 
 	eng.mu.Lock()
 	defer eng.mu.Unlock()

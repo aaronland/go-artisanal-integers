@@ -6,13 +6,14 @@ import (
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"github.com/thisisaaronland/go-artisanal-integers/engine"
 	"log"
+	"os"
 )
 
 func main() {
 
 	var db = flag.String("database", "", "...")
 	var dsn = flag.String("dsn", "", "...")
-	var incr = flag.Int("auto-increment", 0, "...")
+	var last = flag.Int("last-id", 0, "...")
 
 	flag.Parse()
 
@@ -35,9 +36,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if *incr != 0 {
+	if *last != 0 {
 
-		err = eng.Set(int64(*incr))
+		err = eng.SetLastId(int64(*last))
 
 		if err != nil {
 			log.Fatal(err)
@@ -45,5 +46,12 @@ func main() {
 
 	}
 
-	fmt.Println(eng.Next())
+	next, err := eng.NextId()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(next)
+	os.Exit(0)
 }

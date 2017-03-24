@@ -2,6 +2,7 @@ package engine
 
 // http://code.flickr.com/blog/2010/02/08/ticket-servers-distributed-unique-primary-keys-on-the-cheap/
 // https://github.com/go-sql-driver/mysql
+// https://golang.org/pkg/database/sql
 
 import (
 	"database/sql"
@@ -9,6 +10,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/thisisaaronland/go-artisanal-integers"
+	_ "log"
 )
 
 type MySQLEngine struct {
@@ -16,15 +18,15 @@ type MySQLEngine struct {
 	dsn string
 }
 
-func (eng *MySQLEngine) Set(i int64) error {
+func (eng *MySQLEngine) SetLastId(i int64) error {
 
-	max, err := eng.Max()
+	last, err := eng.LastId()
 
 	if err != nil {
 		return err
 	}
 
-	if i < max {
+	if i < last {
 		return errors.New("integer value too small")
 	}
 
@@ -36,21 +38,10 @@ func (eng *MySQLEngine) Set(i int64) error {
 
 	defer db.Close()
 
+	// why doesn't this work when I use Prepare/Exec ?
+
 	sql := fmt.Sprintf("ALTER TABLE integers AUTO_INCREMENT=%d", i)
-
 	_, err = db.Query(sql)
-
-	/*
-		st, err := db.Prepare("ALTER TABLE integers AUTO_INCREMENT=?")
-
-		if err != nil {
-			return err
-		}
-
-		defer st.Close()
-
-		_, err = st.Exec(i)
-	*/
 
 	if err != nil {
 		return err
@@ -59,7 +50,15 @@ func (eng *MySQLEngine) Set(i int64) error {
 	return nil
 }
 
-func (eng *MySQLEngine) Max() (int64, error) {
+func (eng *MySQLEngine) SetOffset(int64) error {
+	return nil
+}
+
+func (eng *MySQLEngine) SetIncrement(int64) error {
+	return nil
+}
+
+func (eng *MySQLEngine) LastId() (int64, error) {
 
 	db, err := eng.connect()
 
@@ -69,18 +68,11 @@ func (eng *MySQLEngine) Max() (int64, error) {
 
 	defer db.Close()
 
-	rows, err := db.Query("SELECT MAX(id) FROM integers")
-
-	if err != nil {
-		return -1, err
-	}
-
-	defer rows.Close()
-	rows.Next()
+	row := db.QueryRow("SELECT MAX(id) FROM integers")
 
 	var max int64
 
-	err = rows.Scan(&max)
+	err = row.Scan(&max)
 
 	if err != nil {
 		return -1, err
@@ -91,13 +83,7 @@ func (eng *MySQLEngine) Max() (int64, error) {
 
 // https://dev.mysql.com/doc/refman/5.7/en/getting-unique-id.html
 
-func (eng *MySQLEngine) Next() (int64, error) {
-
-	err := eng.set_autoincrement()
-
-	if err != nil {
-		return -1, err
-	}
+func (eng *MySQLEngine) NextId() (int64, error) {
 
 	db, err := eng.connect()
 
@@ -106,6 +92,12 @@ func (eng *MySQLEngine) Next() (int64, error) {
 	}
 
 	defer db.Close()
+
+	err = eng.set_autoincrement(db)
+
+	if err != nil {
+		return -1, err
+	}
 
 	st_replace, err := db.Prepare("REPLACE INTO integers (stub) VALUES(?)")
 
@@ -115,20 +107,13 @@ func (eng *MySQLEngine) Next() (int64, error) {
 
 	defer st_replace.Close()
 
-	_, err = st_replace.Exec("a")
+	result, err := st_replace.Exec("a")
 
 	if err != nil {
 		return -1, err
 	}
 
-	rows, err := db.Query("SELECT LAST_INSERT_ID()")
-
-	defer rows.Close()
-	rows.Next()
-
-	var next int64
-
-	err = rows.Scan(&next)
+	next, err := result.LastInsertId()
 
 	if err != nil {
 		return -1, err
@@ -137,15 +122,7 @@ func (eng *MySQLEngine) Next() (int64, error) {
 	return next, nil
 }
 
-func (eng *MySQLEngine) set_autoincrement() error {
-
-	db, err := eng.connect()
-
-	if err != nil {
-		return err
-	}
-
-	defer db.Close()
+func (eng *MySQLEngine) set_autoincrement(db *sql.DB) error {
 
 	st_incr, err := db.Prepare("SET @@auto_increment_increment=2")
 
