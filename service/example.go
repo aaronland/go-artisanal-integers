@@ -6,22 +6,22 @@ import (
 
 type ExampleService struct {
 	artisanalinteger.Service
-	engine 	*artisanalinteger.Engine
+	engine artisanalinteger.Engine
 }
 
-func NewExampleService (eng *artisanalinteger.Engine) (*ExampleService, error) {
+func NewExampleService(eng artisanalinteger.Engine) (*ExampleService, error) {
 
-     srv := ExampleService{
-     	engine: eng,
-     }
+	svc := ExampleService{
+		engine: eng,
+	}
 
-     return &src, nil
+	return &svc, nil
 }
 
-func (srv *ExampleService) NextId() (int64, error) {
-     return srv.engine.NextId()
+func (svc *ExampleService) NextId() (int64, error) {
+	return svc.engine.NextId()
 }
 
-func (srv *ExampleService) LastId() (int64, error) {
-     return srv.engine.LastId()
+func (svc *ExampleService) LastId() (int64, error) {
+	return svc.engine.LastId()
 }

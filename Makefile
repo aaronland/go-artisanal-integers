@@ -14,6 +14,7 @@ rmdeps:
 	if test -d src; then rm -rf src; fi 
 
 deps:
+	@GOPATH=$(shell pwd) go get "github.com/facebookgo/grace/gracehttp"
 	@GOPATH=$(shell pwd) go get "github.com/go-sql-driver/mysql"
 	@GOPATH=$(shell pwd) go get "github.com/garyburd/redigo/redis"
 
@@ -32,3 +33,4 @@ fmt:
 
 bin:    self
 	@GOPATH=$(shell pwd) go build -o bin/int cmd/int.go
+	@GOPATH=$(shell pwd) go build -o bin/intd cmd/intd.go

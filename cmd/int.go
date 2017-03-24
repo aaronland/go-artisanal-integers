@@ -43,7 +43,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 	}
 
 	next, err := eng.NextId()
