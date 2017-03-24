@@ -64,3 +64,67 @@ func main() {
 	log.Println(next)
 }
 ```
+
+## Engines
+
+_Please write me_
+
+## Services
+
+_Please write me_
+
+## Tools
+
+### int
+
+Generate an artisanal integer on the command line.
+
+```
+$> ./bin/int -database mysql -dsn '{USER}:{PSWD}/{DATABASE}'
+182583
+```
+
+### intd
+
+Generate an artisanal integer as a service.
+
+```
+$> ./bin/intd -database mysql -dsn '{USER}:{PSWD}/{DATABASE}'
+```
+
+And then
+
+```
+$> curl localhost:8080
+7001
+```
+
+## Performance
+
+### Anecdotal
+
+Running `intd` on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 500 concurrent users, using siege:
+
+```
+$> siege -c 500 http://localhost:8080
+** SIEGE 3.0.5
+** Preparing 500 concurrent users for battle.
+The server is now under siege...^C
+Lifting the server siege...      done.
+
+Transactions:			58285 hits
+Availability:			100.00 %
+Elapsed time:			70.71 secs
+Data transferred:		0.32 MB
+Response time:			0.02 secs
+Transaction rate:		824.28 trans/sec
+Throughput:			0.00 MB/sec
+Concurrency:			14.98
+Successful transactions:	58217
+Failed transactions:		0
+Longest transaction:		1.70
+Shortest transaction:		0.00
+```
+
+## See also
+
