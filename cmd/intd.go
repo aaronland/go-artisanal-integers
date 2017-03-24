@@ -17,9 +17,8 @@ func main() {
 
 	var host = flag.String("host", "localhost", "The hostname to listen for requests on")
 	var port = flag.Int("port", 8080, "The port number to listen for requests on")
-	var db = flag.String("database", "", "...")
+	var db = flag.String("engine", "", "...")
 	var dsn = flag.String("dsn", "", "...")
-	// var last = flag.Int("last-id", 0, "...")
 
 	flag.Parse()
 

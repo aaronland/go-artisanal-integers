@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	var db = flag.String("database", "", "...")
+	var db = flag.String("engine", "", "...")
 	var dsn = flag.String("dsn", "", "...")
 	var last = flag.Int("last-id", 0, "...")
 

@@ -33,7 +33,7 @@ import (
 
 func main() {
 
-	var db = flag.String("database", "", "...")
+	var db = flag.String("engine", "", "...")
 	var dsn = flag.String("dsn", "", "...")
 
 	var eng artisanalinteger.Engine
@@ -69,9 +69,34 @@ func main() {
 
 _Please write me_
 
+```
+type Engine interface {
+	NextId() (int64, error)
+	LastId() (int64, error)
+	SetLastId(int64) error
+	SetOffset(int64) error
+	SetIncrement(int64) error
+}
+```
+
+### MySQL
+
+### Redis
+
+### SummitDB
+
 ## Services
 
 _Please write me_
+
+```
+type Service interface {
+	NextId() (int64, error)
+	MaxId() (int64, error)
+}
+```
+
+### Example
 
 ## Tools
 
@@ -80,7 +105,7 @@ _Please write me_
 Generate an artisanal integer on the command line.
 
 ```
-$> ./bin/int -database mysql -dsn '{USER}:{PSWD}/{DATABASE}'
+$> ./bin/int -engine mysql -dsn '{USER}:{PSWD}/{DATABASE}'
 182583
 ```
 
@@ -89,7 +114,7 @@ $> ./bin/int -database mysql -dsn '{USER}:{PSWD}/{DATABASE}'
 Generate an artisanal integer as a service.
 
 ```
-$> ./bin/intd -database mysql -dsn '{USER}:{PSWD}/{DATABASE}'
+$> ./bin/intd -engine mysql -dsn '{USER}:{PSWD}/{DATABASE}'
 ```
 
 And then
