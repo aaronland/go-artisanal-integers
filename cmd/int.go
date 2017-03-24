@@ -12,6 +12,7 @@ func main() {
 
 	var db = flag.String("database", "", "...")
 	var dsn = flag.String("dsn", "", "...")
+	var incr = flag.Int("auto-increment", 0, "...")
 
 	flag.Parse()
 
@@ -32,6 +33,16 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if *incr != 0 {
+
+		err = eng.Set(int64(*incr))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
 
 	fmt.Println(eng.Next())

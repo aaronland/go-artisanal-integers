@@ -5,17 +5,28 @@ package engine
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/thisisaaronland/go-artisanal-integers"
 )
 
 type MySQLEngine struct {
 	artisanalinteger.Engine
-	dsn   string
-	table string
+	dsn string
 }
 
 func (eng *MySQLEngine) Set(i int64) error {
+
+	max, err := eng.Max()
+
+	if err != nil {
+		return err
+	}
+
+	if i < max {
+		return errors.New("integer value too small")
+	}
 
 	db, err := eng.connect()
 
@@ -25,7 +36,26 @@ func (eng *MySQLEngine) Set(i int64) error {
 
 	defer db.Close()
 
-	// FIX ME
+	sql := fmt.Sprintf("ALTER TABLE integers AUTO_INCREMENT=%d", i)
+
+	_, err = db.Query(sql)
+
+	/*
+		st, err := db.Prepare("ALTER TABLE integers AUTO_INCREMENT=?")
+
+		if err != nil {
+			return err
+		}
+
+		defer st.Close()
+
+		_, err = st.Exec(i)
+	*/
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -62,6 +92,12 @@ func (eng *MySQLEngine) Max() (int64, error) {
 // https://dev.mysql.com/doc/refman/5.7/en/getting-unique-id.html
 
 func (eng *MySQLEngine) Next() (int64, error) {
+
+	err := eng.set_autoincrement()
+
+	if err != nil {
+		return -1, err
+	}
 
 	db, err := eng.connect()
 
@@ -156,8 +192,7 @@ func (eng *MySQLEngine) connect() (*sql.DB, error) {
 func NewMySQLEngine(dsn string) (*MySQLEngine, error) {
 
 	eng := &MySQLEngine{
-		dsn:   dsn,
-		table: "integers",
+		dsn: dsn,
 	}
 
 	db, err := eng.connect()
