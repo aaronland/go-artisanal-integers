@@ -15,6 +15,7 @@ import (
 type MySQLEngine struct {
 	artisanalinteger.Engine
 	dsn       string
+	key	  string
 	offset    int64
 	increment int64
 }
@@ -52,6 +53,11 @@ func (eng *MySQLEngine) SetLastId(i int64) error {
 		return err
 	}
 
+	return nil
+}
+
+func (eng *MySQLEngine) SetKey(k string) error {
+	eng.key = k
 	return nil
 }
 
@@ -179,6 +185,7 @@ func NewMySQLEngine(dsn string) (*MySQLEngine, error) {
 
 	eng := &MySQLEngine{
 		dsn:       dsn,
+		key:	   "integers",
 		offset:    1,
 		increment: 2,
 	}

@@ -28,6 +28,11 @@ func (eng *SummitDBEngine) SetLastId(i int64) error {
 	return err
 }
 
+func (eng *SummitDBEngine) SetKey(k string) error {
+	eng.key = k
+	return nil
+}
+
 func (eng *SummitDBEngine) SetOffset(i int64) error {
 	eng.offset = i
 	return nil

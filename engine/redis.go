@@ -28,6 +28,11 @@ func (eng *RedisEngine) SetLastId(i int64) error {
 	return err
 }
 
+func (eng *RedisEngine) SetKey(k string) error {
+	eng.key = k
+	return nil
+}
+
 func (eng *RedisEngine) SetOffset(i int64) error {
 	eng.offset = i
 	return nil
