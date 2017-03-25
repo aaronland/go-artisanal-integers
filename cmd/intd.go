@@ -50,7 +50,7 @@ func main() {
 
 	handler := func(rsp http.ResponseWriter, req *http.Request) {
 
-		next, err := svc.NextId()
+		next, err := svc.NextInt()
 
 		if err != nil {
 			http.Error(rsp, err.Error(), http.StatusBadRequest)

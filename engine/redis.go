@@ -16,7 +16,7 @@ type RedisEngine struct {
 	mu        *sync.Mutex
 }
 
-func (eng *RedisEngine) SetLastId(i int64) error {
+func (eng *RedisEngine) SetLastInt(i int64) error {
 
 	eng.mu.Lock()
 	defer eng.mu.Unlock()
@@ -43,7 +43,7 @@ func (eng *RedisEngine) SetIncrement(i int64) error {
 	return nil
 }
 
-func (eng *RedisEngine) LastId() (int64, error) {
+func (eng *RedisEngine) LastInt() (int64, error) {
 
 	eng.mu.Lock()
 	defer eng.mu.Unlock()
@@ -72,7 +72,7 @@ func (eng *RedisEngine) LastId() (int64, error) {
 	return i, nil
 }
 
-func (eng *RedisEngine) NextId() (int64, error) {
+func (eng *RedisEngine) NextInt() (int64, error) {
 
 	eng.mu.Lock()
 	defer eng.mu.Unlock()

@@ -20,9 +20,9 @@ type MySQLEngine struct {
 	increment int64
 }
 
-func (eng *MySQLEngine) SetLastId(i int64) error {
+func (eng *MySQLEngine) SetLastInt(i int64) error {
 
-	last, err := eng.LastId()
+	last, err := eng.LastInt()
 
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func (eng *MySQLEngine) SetIncrement(i int64) error {
 	return nil
 }
 
-func (eng *MySQLEngine) LastId() (int64, error) {
+func (eng *MySQLEngine) LastInt() (int64, error) {
 
 	db, err := eng.connect()
 
@@ -97,7 +97,7 @@ func (eng *MySQLEngine) LastId() (int64, error) {
 
 // https://dev.mysql.com/doc/refman/5.7/en/getting-unique-id.html
 
-func (eng *MySQLEngine) NextId() (int64, error) {
+func (eng *MySQLEngine) NextInt() (int64, error) {
 
 	db, err := eng.connect()
 

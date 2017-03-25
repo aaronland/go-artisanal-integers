@@ -40,14 +40,14 @@ func main() {
 
 	if *last != 0 {
 
-		err = eng.SetLastId(int64(*last))
+		err = eng.SetLastInt(int64(*last))
 
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	next, err := eng.NextId()
+	next, err := eng.NextInt()
 
 	if err != nil {
 		log.Fatal(err)

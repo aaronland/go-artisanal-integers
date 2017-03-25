@@ -18,10 +18,10 @@ func NewExampleService(eng artisanalinteger.Engine) (*ExampleService, error) {
 	return &svc, nil
 }
 
-func (svc *ExampleService) NextId() (int64, error) {
-	return svc.engine.NextId()
+func (svc *ExampleService) NextInt() (int64, error) {
+	return svc.engine.NextInt()
 }
 
-func (svc *ExampleService) LastId() (int64, error) {
-	return svc.engine.LastId()
+func (svc *ExampleService) LastInt() (int64, error) {
+	return svc.engine.LastInt()
 }
