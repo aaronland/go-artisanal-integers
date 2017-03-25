@@ -11,5 +11,5 @@ type Engine interface {
 
 type Service interface {
 	NextId() (int64, error)
-	MaxId() (int64, error)
+	LastId() (int64, error)
 }
