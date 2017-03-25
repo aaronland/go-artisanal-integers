@@ -4,7 +4,7 @@ No, really.
 
 ## Caveats
 
-This is absolutely _not_ ready for use yet. For example interfaces (for integer `Engine` thingies) have not been finalized either.
+This is absolutely _not_ ready for use yet. Proceed with caution.
 
 ## Install
 
