@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"flag"
-	"fmt"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"github.com/thisisaaronland/go-artisanal-integers/engine"
+	"io"
 	"log"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -51,6 +53,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(next)
+	writers := []io.Writer{
+		os.Stdout,
+	}
+
+	multi := io.MultiWriter(writers...)
+	writer := bufio.NewWriter(multi)
+
+	str_next := strconv.FormatInt(next, 10)
+	writer.WriteString(str_next + "\n")
+	writer.Flush()
+
 	os.Exit(0)
 }

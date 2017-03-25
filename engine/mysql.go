@@ -15,7 +15,7 @@ import (
 type MySQLEngine struct {
 	artisanalinteger.Engine
 	dsn       string
-	key	  string
+	key       string
 	offset    int64
 	increment int64
 }
@@ -40,7 +40,7 @@ func (eng *MySQLEngine) SetLastId(i int64) error {
 
 	defer db.Close()
 
-	sql := fmt.Sprintf("ALTER TABLE integers AUTO_INCREMENT=%d", i)
+	sql := fmt.Sprintf("ALTER TABLE %s AUTO_INCREMENT=%d", eng.key, i)
 	st, err := db.Prepare(sql)
 
 	if err != nil {
@@ -81,7 +81,8 @@ func (eng *MySQLEngine) LastId() (int64, error) {
 
 	defer db.Close()
 
-	row := db.QueryRow("SELECT MAX(id) FROM integers")
+	sql := fmt.Sprintf("SELECT MAX(id) FROM %s", eng.key)
+	row := db.QueryRow(sql)
 
 	var max int64
 
@@ -112,7 +113,8 @@ func (eng *MySQLEngine) NextId() (int64, error) {
 		return -1, err
 	}
 
-	st_replace, err := db.Prepare("REPLACE INTO integers (stub) VALUES(?)")
+	sql := fmt.Sprintf("REPLACE INTO %s (stub) VALUES(?)", eng.key)
+	st_replace, err := db.Prepare(sql)
 
 	if err != nil {
 		return -1, err
@@ -185,7 +187,7 @@ func NewMySQLEngine(dsn string) (*MySQLEngine, error) {
 
 	eng := &MySQLEngine{
 		dsn:       dsn,
-		key:	   "integers",
+		key:       "integers",
 		offset:    1,
 		increment: 2,
 	}
