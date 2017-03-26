@@ -3,8 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
-	"github.com/thisisaaronland/go-artisanal-integers"
-	"github.com/thisisaaronland/go-artisanal-integers/engine"
+	"github.com/thisisaaronland/go-artisanal-integers/util"
 	"io"
 	"log"
 	"os"
@@ -16,23 +15,12 @@ func main() {
 	var db = flag.String("engine", "", "...")
 	var dsn = flag.String("dsn", "", "...")
 	var last = flag.Int("last-id", 0, "...")
+	var offset = flag.Int("offset", 0, "...")
+	var increment = flag.Int("increment", 0, "...")
 
 	flag.Parse()
 
-	var eng artisanalinteger.Engine
-	var err error
-
-	switch *db {
-
-	case "redis":
-		eng, err = engine.NewRedisEngine(*dsn)
-	case "summitdb":
-		eng, err = engine.NewSummitDBEngine(*dsn)
-	case "mysql":
-		eng, err = engine.NewMySQLEngine(*dsn)
-	default:
-		log.Fatal("Invalid engine")
-	}
+	eng, err := util.NewArtisanalEngine(*db, *dsn)
 
 	if err != nil {
 		log.Fatal(err)
@@ -41,6 +29,24 @@ func main() {
 	if *last != 0 {
 
 		err = eng.SetLastInt(int64(*last))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *increment != 0 {
+
+		err = eng.SetIncrement(int64(*increment))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *offset != 0 {
+
+		err = eng.SetOffset(int64(*offset))
 
 		if err != nil {
 			log.Fatal(err)

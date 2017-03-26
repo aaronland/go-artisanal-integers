@@ -4,9 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/facebookgo/grace/gracehttp"
-	"github.com/thisisaaronland/go-artisanal-integers"
-	"github.com/thisisaaronland/go-artisanal-integers/engine"
 	"github.com/thisisaaronland/go-artisanal-integers/service"
+	"github.com/thisisaaronland/go-artisanal-integers/util"	
 	"log"
 	"net/http"
 	"os"
@@ -22,27 +21,13 @@ func main() {
 
 	flag.Parse()
 
-	var eng artisanalinteger.Engine
-	var svc artisanalinteger.Service
-	var err error
-
-	switch *db {
-
-	case "redis":
-		eng, err = engine.NewRedisEngine(*dsn)
-	case "summitdb":
-		eng, err = engine.NewSummitDBEngine(*dsn)
-	case "mysql":
-		eng, err = engine.NewMySQLEngine(*dsn)
-	default:
-		log.Fatal("Invalid engine")
-	}
+	eng, err := util.NewArtisanalEngine(*db, *dsn)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	svc, err = service.NewExampleService(eng)
+	svc, err := service.NewExampleService(eng)
 
 	if err != nil {
 		log.Fatal(err)
