@@ -86,6 +86,16 @@ type Engine interface {
 
 ### SummitDB
 
+Assuming the following per the [SummitDB documentation](https://github.com/tidwall/summitdb#getting-started):
+
+```
+$> ./summitdb-server
+$> ./summitdb-server -p 7482 -join localhost:7481 -dir data2
+$> ./summitdb-server -p 7483 -join localhost:7481 -dir data3
+```
+
+Then:
+
 ```
 $> ./bin/int -engine summitdb -dsn 'redis://localhost:7481'
 2
@@ -177,3 +187,10 @@ Shortest transaction:		0.00
 
 ## See also
 
+* http://www.brooklynintegers.com/
+* http://www.londonintegers.com/
+* http://www.neverendingbooks.org/artisanal-integers
+* https://nelsonslog.wordpress.com/2012/07/29/artisinal-integers/
+* https://nelsonslog.wordpress.com/2012/08/25/artisinal-integers-part-2/
+* http://www.aaronland.info/weblog/2012/12/01/coffee-and-wifi/#timepixels
+* https://mapzen.com/blog/mapzen-acquires-mission-integers/
