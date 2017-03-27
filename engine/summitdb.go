@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/thisisaaronland/go-artisanal-integers"
-	"log"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -105,7 +105,14 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 			parsed := strings.Split(err.Error(), " ")
 			dsn := fmt.Sprintf("redis://%s", parsed[1])
 
+			fmt.Fprintf(os.Stderr, "summitdb told me to try %s instead, so here we go...\n", dsn)
+
 			eng.mu.Lock()
+
+			// See the way we're explicitly unlocking the mutex rather
+			// than defer-ing it on exit? Yes, that because we are potentially
+			// going to call ourselves recursively here which does not invoke
+			// the defer robot (20170327/thisisaaronland)
 
 			pool, err := make_pool(dsn)
 

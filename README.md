@@ -99,7 +99,15 @@ $> ./bin/int -engine summitdb -dsn 'redis://localhost:7483'
 6
 ```
 
-_Note: If you're reading this it means the SummitDB engine doesn't do the right thing with `TRY` errors yet._
+The SummitDB engine tries to handle `TRY` messages automagically so really it looks like this:
+
+```
+/bin/int -engine summitdb -dsn 'redis://localhost:7482'
+summitdb told me to try redis://127.0.0.1:7483 instead, so here we go...
+22
+```
+
+_Note: If you're reading this it means the SummitDB engine doesn't do the right thing (yet) when the initial host goes down and you don't know the address of any of the peers._
 
 ## Services
 
