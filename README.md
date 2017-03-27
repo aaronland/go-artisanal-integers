@@ -109,7 +109,7 @@ $> ./bin/int -engine summitdb -dsn 'redis://localhost:7483'
 6
 ```
 
-The SummitDB engine tries to handle `TRY` messages automagically so really it looks like this:
+The SummitDB engine attempts to handle `TRY` messages automagically so really it looks like this:
 
 ```
 /bin/int -engine summitdb -dsn 'redis://localhost:7482'
