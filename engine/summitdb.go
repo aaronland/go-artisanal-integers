@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 func make_pool(dsn string) (*redis.Pool, error) {
@@ -30,9 +31,50 @@ func make_pool(dsn string) (*redis.Pool, error) {
 	return pool, nil
 }
 
+func get_peers(pool *redis.Pool) (string, []string, error) {
+
+	var leader string
+	var peers []string
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	redis_rsp, err := conn.Do("RAFTPEERS")
+
+	if err != nil {
+		return leader, peers, err
+	}
+
+	possible, err := redis.Strings(redis_rsp, nil)
+
+	if err != nil {
+		return leader, peers, err
+	}
+
+	var last string
+
+	for _, p := range possible {
+
+		switch p {
+		case "Invalid":
+			// pass
+		case "Follower":
+			peers = append(peers, last)
+		case "Leader":
+			peers = append(peers, last)
+			leader = last
+		default:
+			last = fmt.Sprintf("redis://%s", p)
+		}
+	}
+
+	return leader, peers, nil
+}
+
 type SummitDBEngine struct {
 	artisanalinteger.Engine
 	pool      *redis.Pool
+	leader    string
 	peers     []string
 	key       string
 	increment int64
@@ -165,25 +207,6 @@ func (eng *SummitDBEngine) nextInt() (int64, error) {
 	return i, nil
 }
 
-func (eng *SummitDBEngine) get_peers() error {
-
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
-
-	conn := eng.pool.Get()
-	defer conn.Close()
-
-	redis_rsp, err := conn.Do("RAFTPEERS")
-
-	if err != nil {
-		return err
-	}
-
-	log.Println(redis_rsp)
-
-	return nil
-}
-
 func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 
 	pool, err := make_pool(dsn)
@@ -192,12 +215,13 @@ func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 		return nil, err
 	}
 
-	peers := make([]string, 0)
+	leader, peers, err := get_peers(pool)
 
 	mu := new(sync.Mutex)
 
 	eng := SummitDBEngine{
 		pool:      pool,
+		leader:    leader,
 		peers:     peers,
 		key:       "integers",
 		increment: 2,
@@ -205,7 +229,20 @@ func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 		mu:        mu,
 	}
 
-	eng.get_peers()
+	go func() {
+
+		timeChan := time.NewTimer(time.Second * 1).C
+
+		for {
+			select {
+			case <-timeChan:
+				log.Println("get peers")
+				get_peers(eng.pool)
+			default:
+				//
+			}
+		}
+	}()
 
 	return &eng, nil
 }

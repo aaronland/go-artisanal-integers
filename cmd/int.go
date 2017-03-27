@@ -17,6 +17,7 @@ func main() {
 	var last = flag.Int("last-id", 0, "...")
 	var offset = flag.Int("offset", 0, "...")
 	var increment = flag.Int("increment", 0, "...")
+	var continuous = flag.Bool("continuous", false, "...")
 
 	flag.Parse()
 
@@ -53,12 +54,6 @@ func main() {
 		}
 	}
 
-	next, err := eng.NextInt()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	writers := []io.Writer{
 		os.Stdout,
 	}
@@ -66,9 +61,23 @@ func main() {
 	multi := io.MultiWriter(writers...)
 	writer := bufio.NewWriter(multi)
 
-	str_next := strconv.FormatInt(next, 10)
-	writer.WriteString(str_next + "\n")
-	writer.Flush()
+	for {
+
+		next, err := eng.NextInt()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		str_next := strconv.FormatInt(next, 10)
+		writer.WriteString(str_next + "\n")
+		writer.Flush()
+
+		if !*continuous {
+			break
+		}
+
+	}
 
 	os.Exit(0)
 }
