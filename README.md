@@ -86,6 +86,21 @@ type Engine interface {
 
 ### SummitDB
 
+```
+$> ./bin/int -engine summitdb -dsn 'redis://localhost:7481'
+2
+$> ./bin/int -engine summitdb -dsn 'redis://localhost:7481'
+4
+$> ./bin/int -engine summitdb -dsn 'redis://localhost:7481'
+2017/03/27 14:58:55 dial tcp 127.0.0.1:7481: getsockopt: connection refused
+$> ./bin/int -engine summitdb -dsn 'redis://localhost:7482'
+2017/03/27 14:58:57 TRY 127.0.0.1:7483
+$> ./bin/int -engine summitdb -dsn 'redis://localhost:7483'
+6
+```
+
+_Note: If you're reading this it means the SummitDB engine doesn't do the right thing with `TRY` errors yet._
+
 ## Services
 
 _Please write me_
