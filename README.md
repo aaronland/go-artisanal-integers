@@ -162,7 +162,7 @@ $> curl localhost:8080
 
 ### Anecdotal
 
-Running `intd` on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 500 concurrent users, using siege:
+Running `intd` backed by MySQL on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 500 concurrent users, using siege:
 
 ```
 $> siege -c 500 http://localhost:8080
