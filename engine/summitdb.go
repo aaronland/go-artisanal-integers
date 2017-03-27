@@ -1,11 +1,33 @@
 package engine
 
 import (
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/thisisaaronland/go-artisanal-integers"
+	"log"
 	"strconv"
+	"strings"
 	"sync"
 )
+
+func make_pool(dsn string) (*redis.Pool, error) {
+
+	pool := &redis.Pool{
+		MaxActive: 1000,
+		Dial: func() (redis.Conn, error) {
+
+			c, err := redis.DialURL(dsn)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return c, err
+		},
+	}
+
+	return pool, nil
+}
 
 type SummitDBEngine struct {
 	artisanalinteger.Engine
@@ -74,6 +96,45 @@ func (eng *SummitDBEngine) LastInt() (int64, error) {
 
 func (eng *SummitDBEngine) NextInt() (int64, error) {
 
+	i, err := eng.nextInt()
+
+	if err != nil {
+
+		if strings.HasPrefix(err.Error(), "TRY") {
+
+			parsed := strings.Split(err.Error(), " ")
+			dsn := fmt.Sprintf("redis://%s", parsed[1])
+
+			eng.mu.Lock()
+
+			pool, err := make_pool(dsn)
+
+			if err != nil {
+				eng.mu.Unlock()
+				return -1, err
+			}
+
+			err = eng.pool.Close()
+
+			if err != nil {
+				eng.mu.Unlock()
+				return -1, err
+			}
+
+			eng.pool = pool
+			eng.mu.Unlock()
+
+			return eng.NextInt()
+		}
+
+		return -1, err
+	}
+
+	return i, nil
+}
+
+func (eng *SummitDBEngine) nextInt() (int64, error) {
+
 	eng.mu.Lock()
 	defer eng.mu.Unlock()
 
@@ -97,18 +158,10 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 
 func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 
-	pool := &redis.Pool{
-		MaxActive: 1000,
-		Dial: func() (redis.Conn, error) {
+	pool, err := make_pool(dsn)
 
-			c, err := redis.DialURL(dsn)
-
-			if err != nil {
-				return nil, err
-			}
-
-			return c, err
-		},
+	if err != nil {
+		return nil, err
 	}
 
 	mu := new(sync.Mutex)

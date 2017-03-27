@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/thisisaaronland/go-artisanal-integers/service"
-	"github.com/thisisaaronland/go-artisanal-integers/util"	
+	"github.com/thisisaaronland/go-artisanal-integers/util"
 	"log"
 	"net/http"
 	"os"
