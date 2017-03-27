@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/thisisaaronland/go-artisanal-integers"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -32,6 +33,7 @@ func make_pool(dsn string) (*redis.Pool, error) {
 type SummitDBEngine struct {
 	artisanalinteger.Engine
 	pool      *redis.Pool
+	peers     []string
 	key       string
 	increment int64
 	offset    int64
@@ -163,6 +165,25 @@ func (eng *SummitDBEngine) nextInt() (int64, error) {
 	return i, nil
 }
 
+func (eng *SummitDBEngine) get_peers() error {
+
+	eng.mu.Lock()
+	defer eng.mu.Unlock()
+
+	conn := eng.pool.Get()
+	defer conn.Close()
+
+	redis_rsp, err := conn.Do("RAFTPEERS")
+
+	if err != nil {
+		return err
+	}
+
+	log.Println(redis_rsp)
+
+	return nil
+}
+
 func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 
 	pool, err := make_pool(dsn)
@@ -171,15 +192,20 @@ func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 		return nil, err
 	}
 
+	peers := make([]string, 0)
+
 	mu := new(sync.Mutex)
 
 	eng := SummitDBEngine{
 		pool:      pool,
+		peers:     peers,
 		key:       "integers",
 		increment: 2,
 		offset:    1,
 		mu:        mu,
 	}
+
+	eng.get_peers()
 
 	return &eng, nil
 }
