@@ -117,7 +117,7 @@ summitdb told me to try redis://127.0.0.1:7483 instead, so here we go...
 22
 ```
 
-_Note: If you're reading this it means the SummitDB engine doesn't do the right thing (yet) when the initial host goes down and you don't know the address of any of the peers._
+_Note: If you're reading this it means the SummitDB engine doesn't [do the right thing yet](https://github.com/tidwall/summitdb/issues/19) when the initial host goes down and you don't know the address of any of the peers._
 
 ## Services
 
