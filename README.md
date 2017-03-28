@@ -167,6 +167,8 @@ type Service interface {
 
 ### Example
 
+_Please write me_
+
 ## Tools
 
 ### int
@@ -219,6 +221,31 @@ Failed transactions:		0
 Longest transaction:		1.70
 Shortest transaction:		0.00
 ```
+
+Running `intd` backed by SummitDB on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 100 concurrent users, using siege:
+
+```
+$> siege -c 100 http://localhost:8080
+** SIEGE 3.0.5
+** Preparing 100 concurrent users for battle.
+The server is now under siege...^C
+Lifting the server siege...      done.
+
+Transactions:			418 hits
+Availability:			100.00 %
+Elapsed time:			44.57 secs
+Data transferred:		0.01 MB
+Response time:			9.13 secs
+Transaction rate:		9.38 trans/sec
+Throughput:			0.00 MB/sec
+Concurrency:			85.65
+Successful transactions:	303
+Failed transactions:		0
+Longest transaction:		22.80
+Shortest transaction:		0.07
+```
+
+_Note: This pegged the (single) CPU on the virtual machine._
 
 ## See also
 
