@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"github.com/thisisaaronland/go-artisanal-integers"
-	"log"
+	_ "log"
 	"os"
 	"strconv"
 	"strings"
@@ -165,7 +165,21 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 
 				keep_trying := true
 
+				counter := 0
+				max := len(eng.peers) * 100
+
+				eng.mu.Lock()
+
 				for {
+
+					counter += 1
+
+					if counter >= max {
+						fmt.Fprintf(os.Stderr, "couldn't find new leader after %d tries so giving up\n", max)
+						break
+					}
+
+					fmt.Fprintf(os.Stderr, "couldn't connect to leader so trying to see if the peers are rebalancing themselves (%d/%d)...\n", counter, max)
 
 					for _, pr := range eng.peers {
 
@@ -184,8 +198,10 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 						}
 
 						if leader != eng.leader {
+
 							new_leader = leader
 							new_peers = peers
+
 							keep_trying = false
 							retry = true
 						}
@@ -193,8 +209,12 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 
 					if !keep_trying {
 						break
+					} else {
+						time.Sleep(200 * time.Millisecond)
 					}
 				}
+
+				eng.mu.Unlock()
 
 				if retry {
 					eng.mu.Lock()
@@ -291,13 +311,19 @@ func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 
 	go func() {
 
-		timeChan := time.NewTimer(time.Second * 1).C
+		timer := time.NewTimer(time.Second * 1).C
+		done := make(chan bool)
 
 		for {
 			select {
-			case <-timeChan:
-				log.Println("get peers")
-				get_peers(eng.pool)
+			case <-timer:
+				_, _, err := get_peers(eng.pool)
+
+				if err != nil {
+					done <- true
+				}
+			case <-done:
+				break
 			default:
 				//
 			}
