@@ -226,7 +226,7 @@ Longest transaction:		1.70
 Shortest transaction:		0.00
 ```
 
-Running `intd` backed by SummitDB on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 100 concurrent users, using siege:
+Running `intd` backed by SummitDB (running with [high consistency](https://github.com/tidwall/summitdb#read-consistency)) on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 100 concurrent users, using siege:
 
 ```
 $> siege -c 100 http://localhost:8080
