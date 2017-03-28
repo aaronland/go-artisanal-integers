@@ -4,13 +4,16 @@ package engine
 
 import (
 	"errors"
+	"fmt"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"net/http"
+	"strconv"
 	"sync"
 )
 
 type RqliteEngine struct {
 	artisanalinteger.Engine
+	endpoint  string
 	key       string
 	increment int64
 	offset    int64
@@ -38,8 +41,8 @@ type ExecuteResults struct {
 }
 
 type ExecuteResult struct {
-	LastInsertID int
-	RowsAffected int
+	LastInsertID int64
+	RowsAffected int64
 	Time         QueryTime
 }
 
@@ -67,7 +70,24 @@ func (eng *RqliteEngine) NextInt() (int64, error) {
 }
 
 func (eng *RqliteEngine) LastInt() (int64, error) {
-	return -1, errors.New("Please implement me")
+
+	sql := fmt.Sprintf("SELECT MAX(id) FROM %s", eng.key)
+
+	results, err := eng.query(sql)
+
+	if err != nil {
+		return -1, err
+	}
+
+	r := results.Results[0]
+	str_i := r.Values[0]
+	i, err := strconv.ParseInt(str_i, 10, 64)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return i, nil
 }
 
 func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
@@ -84,6 +104,7 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 	mu := new(sync.Mutex)
 
 	eng := RqliteEngine{
+		endpoint:  dsn,
 		key:       "integers",
 		increment: 2,
 		offset:    1,
