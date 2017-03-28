@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"errors"
 	"github.com/garyburd/redigo/redis"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"strconv"
@@ -18,13 +19,23 @@ type RedisEngine struct {
 
 func (eng *RedisEngine) SetLastInt(i int64) error {
 
+	last, err := eng.LastInt()
+
+	if err != nil {
+		return err
+	}
+
+	if i < last {
+		return errors.New("integer value too small")
+	}
+
 	eng.mu.Lock()
 	defer eng.mu.Unlock()
 
 	conn := eng.pool.Get()
 	defer conn.Close()
 
-	_, err := conn.Do("SET", eng.key, i)
+	_, err = conn.Do("SET", eng.key, i)
 	return err
 }
 
