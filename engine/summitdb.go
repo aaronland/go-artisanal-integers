@@ -61,7 +61,6 @@ func get_peers(pool *redis.Pool) (string, []string, error) {
 		case "Follower":
 			peers = append(peers, last)
 		case "Leader":
-			peers = append(peers, last)
 			leader = last
 		default:
 			last = fmt.Sprintf("redis://%s", p)
@@ -144,12 +143,73 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 
 	if err != nil {
 
+		retry := false
+		var retry_host string
+
 		if strings.HasPrefix(err.Error(), "TRY") {
 
 			parsed := strings.Split(err.Error(), " ")
 			dsn := fmt.Sprintf("redis://%s", parsed[1])
 
 			fmt.Fprintf(os.Stderr, "summitdb told me to try %s instead, so here we go...\n", dsn)
+
+			retry = true
+			retry_host = dsn
+
+		} else {
+
+			if len(eng.peers) > 0 {
+
+				var new_leader string
+				var new_peers []string
+
+				keep_trying := true
+
+				for {
+
+					for _, pr := range eng.peers {
+
+						pl, err := make_pool(pr)
+
+						if err != nil {
+							keep_trying = false
+							break
+						}
+
+						leader, peers, err := get_peers(pl)
+
+						if err != nil {
+							keep_trying = false
+							break
+						}
+
+						if leader != eng.leader {
+							new_leader = leader
+							new_peers = peers
+							keep_trying = false
+							retry = true
+						}
+					}
+
+					if !keep_trying {
+						break
+					}
+				}
+
+				if retry {
+					eng.mu.Lock()
+
+					eng.leader = new_leader
+					eng.peers = new_peers
+
+					retry_host = eng.leader
+					eng.mu.Unlock()
+
+				}
+			}
+		}
+
+		if retry {
 
 			eng.mu.Lock()
 
@@ -158,7 +218,7 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 			// going to call ourselves recursively here which does not invoke
 			// the defer robot (20170327/thisisaaronland)
 
-			pool, err := make_pool(dsn)
+			pool, err := make_pool(retry_host)
 
 			if err != nil {
 				eng.mu.Unlock()
