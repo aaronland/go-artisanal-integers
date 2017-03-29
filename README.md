@@ -84,6 +84,17 @@ type Engine interface {
 
 _Please write me_
 
+#### Schema
+
+```
+CREATE TABLE `integers` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `stub` char(1) NOT NULL DEFAULT '',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `stub` (`stub`)
+) ENGINE=MyISAM;
+```
+
 ### Redis
 
 _Please write me_
@@ -91,6 +102,17 @@ _Please write me_
 ```
 $> ./bin/int -engine redis -dsn 'redis://localhost:6379' -continuous
 8
+```
+
+### Rqlite
+
+_Please write me_
+
+#### Schema
+
+```
+CREATE TABLE integers (id INTEGER PRIMARY KEY AUTOINCREMENT, stub CHAR(1))
+CREATE UNIQUE INDEX `by_stub` ON integers(stub)
 ```
 
 ### SummitDB

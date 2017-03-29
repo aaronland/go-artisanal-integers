@@ -1,8 +1,10 @@
 package engine
 
 // https://github.com/rqlite/rqlite/blob/master/doc/DATA_API.md
+// https://sqlite.org/autoinc.html
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -134,18 +136,14 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 
 func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 
-	// FIX ME - POST body data...
-
-	params := url.Values{}
-	params.Set("q", sql)
+	buf := bytes.NewBufferString(sql)
+	http.Post(eng.endpoint, "application/json", buf)
 
 	req, err := http.NewRequest("POST", eng.endpoint, nil)
 
 	if err != nil {
 		return nil, err
 	}
-
-	req.URL.RawQuery = (params).Encode()
 
 	rsp, err := eng.client.Do(req)
 
