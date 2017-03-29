@@ -3,10 +3,13 @@ package engine
 // https://github.com/rqlite/rqlite/blob/master/doc/DATA_API.md
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/thisisaaronland/go-artisanal-integers"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"sync"
 )
@@ -91,11 +94,83 @@ func (eng *RqliteEngine) LastInt() (int64, error) {
 }
 
 func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
-	return nil, errors.New("Please implement me")
+
+	params := url.Values{}
+	params.Set("q", sql)
+
+	req, err := http.NewRequest("GET", eng.endpoint, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.URL.RawQuery = (params).Encode()
+
+	rsp, err := eng.client.Do(req)
+
+	if err != nil {
+		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
+		return nil, errors.New(msg)
+	}
+
+	defer rsp.Body.Close()
+
+	body, err := ioutil.ReadAll(rsp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var results QueryResults
+
+	err = json.Unmarshal(body, &results)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &results, nil
 }
 
 func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
-	return nil, errors.New("Please implement me")
+
+	// FIX ME - POST body data...
+
+	params := url.Values{}
+	params.Set("q", sql)
+
+	req, err := http.NewRequest("POST", eng.endpoint, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.URL.RawQuery = (params).Encode()
+
+	rsp, err := eng.client.Do(req)
+
+	if err != nil {
+		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
+		return nil, errors.New(msg)
+	}
+
+	defer rsp.Body.Close()
+
+	body, err := ioutil.ReadAll(rsp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var results ExecuteResults
+
+	err = json.Unmarshal(body, &results)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &results, nil
 }
 
 func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
