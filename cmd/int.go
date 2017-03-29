@@ -14,7 +14,7 @@ func main() {
 
 	var db = flag.String("engine", "", "...")
 	var dsn = flag.String("dsn", "", "...")
-	var last = flag.Int("last-id", 0, "...")
+	var last = flag.Int("set-last-id", 0, "...")
 	var offset = flag.Int("offset", 0, "...")
 	var increment = flag.Int("increment", 0, "...")
 	var continuous = flag.Bool("continuous", false, "...")

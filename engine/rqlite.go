@@ -11,9 +11,10 @@ import (
 	"fmt"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
-	"strconv"
+	_ "strconv"
 	"sync"
 )
 
@@ -30,26 +31,28 @@ type RqliteEngine struct {
 type QueryTime float64
 
 type QueryResults struct {
-	Results []QueryResult
-	Time    QueryTime
+	Results []QueryResult `json:"results"`
+	Time    QueryTime     `json:"time"`
 }
 
 type QueryResult struct {
-	Columns []string
-	Types   []string
-	Values  []string
-	Time    QueryTime
+	Columns []string  `json:"columns"`
+	Types   []string  `json:"types"`
+	Values  []int64   `json:"values"`
+	Time    QueryTime `json:"time"`
+	Error   string    `json:"error"`
 }
 
 type ExecuteResults struct {
-	Results []ExecuteResult
-	Time    QueryTime
+	Results []ExecuteResult `json:"results"`
+	Time    QueryTime       `json:"time"`
 }
 
 type ExecuteResult struct {
-	LastInsertID int64
-	RowsAffected int64
-	Time         QueryTime
+	LastInsertId int64     `json:"last_insert_id"`
+	RowsAffected int64     `json:"rows_affected"`
+	Time         QueryTime `json:"time"`
+	Error        string    `json:"error"`
 }
 
 func (eng *RqliteEngine) SetLastInt(i int64) error {
@@ -72,7 +75,24 @@ func (eng *RqliteEngine) SetIncrement(i int64) error {
 }
 
 func (eng *RqliteEngine) NextInt() (int64, error) {
-	return -1, errors.New("Please implement me")
+
+	sql := fmt.Sprintf("REPLACE INTO %s (stub) VALUES ('a')", eng.key)
+
+	results, err := eng.execute(sql)
+
+	if err != nil {
+		return -1, err
+	}
+
+	r := results.Results[0]
+
+	if r.Error != "" {
+		return -1, errors.New(r.Error)
+	}
+
+	i := r.LastInsertId
+
+	return i, nil
 }
 
 func (eng *RqliteEngine) LastInt() (int64, error) {
@@ -85,13 +105,14 @@ func (eng *RqliteEngine) LastInt() (int64, error) {
 		return -1, err
 	}
 
-	r := results.Results[0]
-	str_i := r.Values[0]
-	i, err := strconv.ParseInt(str_i, 10, 64)
+	// PLEASE FIX ME
+	// 2017/03/29 15:48:09 RESULTS '{"results":[{"columns":["MAX(id)"],"types":[""],"values":[[8]]}]}'
+	// 2017/03/29 15:48:09 json: cannot unmarshal array into Go value of type int64
 
-	if err != nil {
-		return -1, err
-	}
+	r := results.Results[0]
+	values := r.Values[0]
+
+	i := values
 
 	return i, nil
 }
@@ -101,12 +122,13 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 	params := url.Values{}
 	params.Set("q", sql)
 
-	req, err := http.NewRequest("GET", eng.endpoint, nil)
+	req, err := http.NewRequest("GET", eng.endpoint+"/db/query", nil)
 
 	if err != nil {
 		return nil, err
 	}
 
+	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = (params).Encode()
 
 	rsp, err := eng.client.Do(req)
@@ -119,6 +141,8 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 	defer rsp.Body.Close()
 
 	body, err := ioutil.ReadAll(rsp.Body)
+
+	log.Printf("RESULTS '%s'\n", body)
 
 	if err != nil {
 		return nil, err
@@ -137,14 +161,23 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 
 func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 
-	buf := bytes.NewBufferString(sql)
-	http.Post(eng.endpoint, "application/json", buf)
+	q := []string{sql}
 
-	req, err := http.NewRequest("POST", eng.endpoint, nil)
+	b, err := json.Marshal(q)
 
 	if err != nil {
 		return nil, err
 	}
+
+	buf := bytes.NewBuffer(b)
+
+	req, err := http.NewRequest("POST", eng.endpoint+"/db/execute", buf)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
 
 	rsp, err := eng.client.Do(req)
 

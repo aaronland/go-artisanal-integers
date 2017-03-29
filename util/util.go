@@ -15,6 +15,8 @@ func NewArtisanalEngine(db string, dsn string) (artisanalinteger.Engine, error) 
 
 	case "redis":
 		eng, err = engine.NewRedisEngine(dsn)
+	case "rqlite":
+		eng, err = engine.NewRqliteEngine(dsn)
 	case "summitdb":
 		eng, err = engine.NewSummitDBEngine(dsn)
 	case "mysql":

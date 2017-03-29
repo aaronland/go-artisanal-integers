@@ -37,3 +37,4 @@ fmt:
 bin:    self
 	@GOPATH=$(shell pwd) go build -o bin/int cmd/int.go
 	@GOPATH=$(shell pwd) go build -o bin/intd cmd/intd.go
+	@GOPATH=$(shell pwd) go build -o bin/last cmd/last.go
