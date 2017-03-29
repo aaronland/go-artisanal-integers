@@ -2,6 +2,7 @@ package engine
 
 // https://github.com/rqlite/rqlite/blob/master/doc/DATA_API.md
 // https://sqlite.org/autoinc.html
+// https://stackoverflow.com/questions/692856/set-start-value-for-autoincrement-in-sqlite
 
 import (
 	"bytes"
