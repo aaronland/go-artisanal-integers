@@ -2,7 +2,6 @@ package engine
 
 // https://github.com/rqlite/rqlite/blob/master/doc/DATA_API.md
 // https://sqlite.org/autoinc.html
-// https://stackoverflow.com/questions/692856/set-start-value-for-autoincrement-in-sqlite
 
 import (
 	"bytes"
@@ -11,10 +10,9 @@ import (
 	"fmt"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"io/ioutil"
-	"log"
+	_ "log"
 	"net/http"
 	"net/url"
-	_ "strconv"
 	"sync"
 )
 
@@ -36,16 +34,26 @@ type QueryResults struct {
 }
 
 type QueryResult struct {
-	Columns []string  `json:"columns"`
-	Types   []string  `json:"types"`
-	Values  []int64   `json:"values"`
-	Time    QueryTime `json:"time"`
-	Error   string    `json:"error"`
+	Columns []string        `json:"columns"`
+	Types   []string        `json:"types"`
+	Values  [][]interface{} `json:"values"` // really we only care about int64s but just in case...
+	Time    QueryTime       `json:"time"`
+	Error   string          `json:"error"`
+}
+
+func (r *QueryResults) String() string {
+	b, _ := json.Marshal(r)
+	return string(b)
 }
 
 type ExecuteResults struct {
 	Results []ExecuteResult `json:"results"`
 	Time    QueryTime       `json:"time"`
+}
+
+func (r *ExecuteResults) String() string {
+	b, _ := json.Marshal(r)
+	return string(b)
 }
 
 type ExecuteResult struct {
@@ -56,7 +64,23 @@ type ExecuteResult struct {
 }
 
 func (eng *RqliteEngine) SetLastInt(i int64) error {
-	return errors.New("Please implement me")
+
+	last, err := eng.LastInt()
+
+	if err != nil {
+		return err
+	}
+
+	if i < last {
+		return errors.New("integer value too small")
+	}
+
+	// https://stackoverflow.com/questions/692856/set-start-value-for-autoincrement-in-sqlite
+
+	sql := fmt.Sprintf("UPDATE sqlite_sequence SET seq=%d WHERE name='%s'", i, eng.key)
+
+	_, err = eng.execute(sql)
+	return err
 }
 
 func (eng *RqliteEngine) SetKey(k string) error {
@@ -91,7 +115,6 @@ func (eng *RqliteEngine) NextInt() (int64, error) {
 	}
 
 	i := r.LastInsertId
-
 	return i, nil
 }
 
@@ -105,16 +128,16 @@ func (eng *RqliteEngine) LastInt() (int64, error) {
 		return -1, err
 	}
 
-	// PLEASE FIX ME
-	// 2017/03/29 15:48:09 RESULTS '{"results":[{"columns":["MAX(id)"],"types":[""],"values":[[8]]}]}'
-	// 2017/03/29 15:48:09 json: cannot unmarshal array into Go value of type int64
-
 	r := results.Results[0]
+
+	if r.Error != "" {
+		return -1, errors.New(r.Error)
+	}
+
 	values := r.Values[0]
 
-	i := values
-
-	return i, nil
+	i := values[0].(float64)
+	return int64(i), nil
 }
 
 func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
@@ -141,8 +164,6 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 	defer rsp.Body.Close()
 
 	body, err := ioutil.ReadAll(rsp.Body)
-
-	log.Printf("RESULTS '%s'\n", body)
 
 	if err != nil {
 		return nil, err

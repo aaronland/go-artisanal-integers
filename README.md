@@ -43,6 +43,8 @@ func main() {
 
 	case "redis":
 		eng, err = engine.NewRedisEngine(*dsn)
+	case "rqlite":
+		eng, err = engine.NewRqliteEngine(*dsn)
 	case "summitdb":
 		eng, err = engine.NewSummitDBEngine(*dsn)
 	case "mysql":
@@ -107,6 +109,11 @@ $> ./bin/int -engine redis -dsn 'redis://localhost:6379' -continuous
 ### Rqlite
 
 _Please write me_
+
+```
+$> ./bin/int -engine rqlite -dsn http://localhost:4001
+31
+```
 
 #### Schema
 
