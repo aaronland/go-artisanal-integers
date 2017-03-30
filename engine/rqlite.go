@@ -4,13 +4,15 @@ package engine
 // https://sqlite.org/autoinc.html
 
 import (
+        "bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/thisisaaronland/go-artisanal-integers"
+	"io"
 	"io/ioutil"
-	_ "log"
+	"log"
 	"net/http"
 	"net/url"
 	"sync"
@@ -390,38 +392,12 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	/*
 		rsp, err := eng.do(req)
 
 		if err != nil {
 			msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
 			return nil, errors.New(msg)
 		}
-	*/
-
-	rsp, err := eng.client.Do(req)
-
-	if err != nil {
-		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
-		return nil, errors.New(msg)
-	}
-
-	if rsp.StatusCode == 301 {
-
-		rsp.Body.Close()
-
-		location := rsp.Header.Get("Location")
-		leader, err := url.Parse(location)
-
-		if err != nil {
-			return nil, err
-		}
-
-		new_leader := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
-		eng.leader = new_leader
-
-		return eng.execute(sql)
-	}
 
 	defer rsp.Body.Close()
 
@@ -443,6 +419,15 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 }
 
 func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
+
+	// Hack - see below
+	  var b bytes.Buffer
+	  wr := bufio.NewWriter(&b)
+
+	  io.Copy(wr, req.Body)
+
+		buf := bytes.NewBuffer(b.Bytes())
+		req.Body = ioutil.NopCloser(buf)
 
 	rsp, err := eng.client.Do(req)
 
@@ -467,7 +452,13 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 
 		req.URL = leader
 
+		// Hack - see below
+
+		buf = bytes.NewBuffer(b.Bytes())
+		req.Body = ioutil.NopCloser(buf)
+
 		// FIX ME: why is req.Body being closed even though it's a *bytes.Buffer?
+		// Because an older version of Go
 		// https://golang.org/pkg/net/http/#NewRequest
 
 		return eng.do(req)
@@ -479,6 +470,7 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 
 	leader, peers, err := get_rqlite_peers(dsn)
+	log.Println(dsn, leader)
 
 	if err != nil {
 		return nil, err
@@ -488,7 +480,7 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 	mu := new(sync.Mutex)
 
 	eng := RqliteEngine{
-		leader:    leader,
+		leader:    dsn,
 		peers:     peers,
 		key:       "integers",
 		increment: 2,
@@ -507,17 +499,20 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 			case <-timer:
 
 				leader, peers, err := get_rqlite_peers(eng.leader)
+				log.Println("PEERS", leader, peers)
 
 				if err != nil {
 					done <- true
 				}
 
+				/*
 				if leader != eng.leader {
 					eng.mu.Lock()
 					eng.leader = leader
 					eng.peers = peers
 					eng.mu.Unlock()
 				}
+				*/
 
 			case <-done:
 				break
