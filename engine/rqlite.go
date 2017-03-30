@@ -4,7 +4,7 @@ package engine
 // https://sqlite.org/autoinc.html
 
 import (
-        "bufio"
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -195,21 +195,21 @@ func get_rqlite_peers(endpoint string) (string, []string, error) {
 
 	/*
 
-		See what's going on here? We want to point to the thing on port 4003
-		and _not_ port 4004. It's weird. It appears to an Rqlite thing not a
-		fast thing. Maybe? Dunno... (20170330/thisisaaronland)
+			See what's going on here? We want to point to the thing on port 4003
+			and _not_ port 4004. It's weird. It appears to an Rqlite thing not a
+			fast thing. Maybe? Dunno... (20170330/thisisaaronland)
 
-	        "leader": "127.0.0.1:4004",
-	        "meta": {
-	            "APIPeers": {
-	                "127.0.0.1:4002": "localhost:4001",
-	                "127.0.0.1:4004": "localhost:4003"
-	            }
-	        },
-	        "peers": [
-	            "127.0.0.1:4004",
-	            "127.0.0.1:4002"
-	        ],
+		        "leader": "127.0.0.1:4004",
+		        "meta": {
+		            "APIPeers": {
+		                "127.0.0.1:4002": "localhost:4001",
+		                "127.0.0.1:4004": "localhost:4003"
+		            }
+		        },
+		        "peers": [
+		            "127.0.0.1:4004",
+		            "127.0.0.1:4002"
+		        ],
 
 	*/
 
@@ -392,12 +392,12 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 
 	req.Header.Set("Content-Type", "application/json")
 
-		rsp, err := eng.do(req)
+	rsp, err := eng.do(req)
 
-		if err != nil {
-			msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
-			return nil, errors.New(msg)
-		}
+	if err != nil {
+		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
+		return nil, errors.New(msg)
+	}
 
 	defer rsp.Body.Close()
 
@@ -421,13 +421,13 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 
 	// Hack - see below
-	  var b bytes.Buffer
-	  wr := bufio.NewWriter(&b)
+	var b bytes.Buffer
+	wr := bufio.NewWriter(&b)
 
-	  io.Copy(wr, req.Body)
+	io.Copy(wr, req.Body)
 
-		buf := bytes.NewBuffer(b.Bytes())
-		req.Body = ioutil.NopCloser(buf)
+	buf := bytes.NewBuffer(b.Bytes())
+	req.Body = ioutil.NopCloser(buf)
 
 	rsp, err := eng.client.Do(req)
 
@@ -506,12 +506,12 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 				}
 
 				/*
-				if leader != eng.leader {
-					eng.mu.Lock()
-					eng.leader = leader
-					eng.peers = peers
-					eng.mu.Unlock()
-				}
+					if leader != eng.leader {
+						eng.mu.Lock()
+						eng.leader = leader
+						eng.peers = peers
+						eng.mu.Unlock()
+					}
 				*/
 
 			case <-done:
