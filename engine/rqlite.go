@@ -320,37 +320,11 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = (params).Encode()
 
-	/*
-		rsp, err := eng.do(req)
-
-		if err != nil {
-			msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
-			return nil, errors.New(msg)
-		}
-	*/
-
-	rsp, err := eng.client.Do(req)
+	rsp, err := eng.do(req)
 
 	if err != nil {
 		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
 		return nil, errors.New(msg)
-	}
-
-	if rsp.StatusCode == 301 {
-
-		rsp.Body.Close()
-
-		location := rsp.Header.Get("Location")
-		leader, err := url.Parse(location)
-
-		if err != nil {
-			return nil, err
-		}
-
-		new_leader := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
-		eng.leader = new_leader
-
-		return eng.query(sql)
 	}
 
 	defer rsp.Body.Close()
@@ -421,13 +395,18 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 
 	// Hack - see below
+
 	var b bytes.Buffer
-	wr := bufio.NewWriter(&b)
+	var buf *bytes.Buffer
 
-	io.Copy(wr, req.Body)
+	if req.Body != nil {
+		wr := bufio.NewWriter(&b)
 
-	buf := bytes.NewBuffer(b.Bytes())
-	req.Body = ioutil.NopCloser(buf)
+		io.Copy(wr, req.Body)
+
+		buf = bytes.NewBuffer(b.Bytes())
+		req.Body = ioutil.NopCloser(buf)
+	}
 
 	rsp, err := eng.client.Do(req)
 
@@ -454,8 +433,10 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 
 		// Hack - see below
 
-		buf = bytes.NewBuffer(b.Bytes())
-		req.Body = ioutil.NopCloser(buf)
+		if req.Body != nil {
+			buf = bytes.NewBuffer(b.Bytes())
+			req.Body = ioutil.NopCloser(buf)
+		}
 
 		// FIX ME: why is req.Body being closed even though it's a *bytes.Buffer?
 		// Because an older version of Go
