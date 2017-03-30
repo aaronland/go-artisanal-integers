@@ -308,9 +308,6 @@ func (eng *RqliteEngine) LastInt() (int64, error) {
 
 func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 
-	params := url.Values{}
-	params.Set("q", sql)
-
 	req, err := http.NewRequest("GET", eng.leader+"/db/query", nil)
 
 	if err != nil {
@@ -318,7 +315,16 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+
+	params := url.Values{}
+	params.Set("q", sql)
+
 	req.URL.RawQuery = (params).Encode()
+
+	// So this req.URL will fail with a 400 error when you use a host that
+	// is **not** currently the leader... rather than something that will
+	// return a 301. Even though the exact same URL sent via curl works fine.
+	// Computers amirite? (20170330/thisisaaronland)
 
 	rsp, err := eng.do(req)
 
@@ -400,6 +406,7 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 	var buf *bytes.Buffer
 
 	if req.Body != nil {
+
 		wr := bufio.NewWriter(&b)
 
 		io.Copy(wr, req.Body)
@@ -451,7 +458,6 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 
 	leader, peers, err := get_rqlite_peers(dsn)
-	log.Println(dsn, leader)
 
 	if err != nil {
 		return nil, err
@@ -461,7 +467,7 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 	mu := new(sync.Mutex)
 
 	eng := RqliteEngine{
-		leader:    dsn,
+		leader:    leader,
 		peers:     peers,
 		key:       "integers",
 		increment: 2,
@@ -486,14 +492,12 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 					done <- true
 				}
 
-				/*
-					if leader != eng.leader {
-						eng.mu.Lock()
-						eng.leader = leader
-						eng.peers = peers
-						eng.mu.Unlock()
-					}
-				*/
+				if leader != eng.leader {
+					eng.mu.Lock()
+					eng.leader = leader
+					eng.peers = peers
+					eng.mu.Unlock()
+				}
 
 			case <-done:
 				break
