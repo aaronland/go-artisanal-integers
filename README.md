@@ -110,6 +110,8 @@ $> ./bin/int -engine redis -dsn 'redis://localhost:6379' -continuous
 
 _Please write me_
 
+This engine is not feature complete yet and still has bugs. It should be considered experimental.
+
 ```
 $> ./bin/int -engine rqlite -dsn http://localhost:4001
 31

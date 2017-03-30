@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"io/ioutil"
-	_ "log"
+	"log"
 	"net/http"
 	"net/url"
 	"sync"
@@ -25,6 +25,44 @@ type RqliteEngine struct {
 	mu        *sync.Mutex
 	client    *http.Client
 }
+
+type Status struct {
+	Build   BuildStatus   `json:"build"`
+	HTTP    HTTPStatus    `json:"http"`
+	Node    NodeStatus    `json:"node"`
+	Runtime RuntimeStatus `json:"runtime"`
+	Store   StoreStatus   `json:"store"`
+}
+
+type BuildStatus struct {
+	Branch    string `json:"branch"`
+	BuildTime string `json:"build_time"`
+	Commit    string `json:"commit"`
+	Version   string `json:"version"`
+}
+
+type HTTPStatus struct {
+	Addr     string `json:"addr"`
+	Auth     string `json:"auth"`
+	Redirect string `json:"redirect"`
+}
+
+type NodeStatus struct {
+	StartTime string `json:"start_time"`
+	Uptime    string `json:"uptime"`
+}
+
+type RuntimeStatus struct {
+	GOARCH       string `json:"GOARCH"`
+	GOMAXPROCS   int    `json:"GOMAXPROCS"`
+	GOOS         string `json:"GOOS"`
+	NumCPU       int    `json:"numCPU"`
+	NumGoRoutine int    `json:"numGoroutine"`
+	Version      string `json:"version"`
+}
+
+// curl localhost:4003/status
+type StoreStatus interface{}
 
 type QueryTime float64
 
@@ -154,11 +192,37 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = (params).Encode()
 
+	/*
+		rsp, err := eng.do(req)
+
+		if err != nil {
+			msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
+			return nil, errors.New(msg)
+		}
+	*/
+
 	rsp, err := eng.client.Do(req)
 
 	if err != nil {
 		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
 		return nil, errors.New(msg)
+	}
+
+	if rsp.StatusCode == 301 {
+
+		rsp.Body.Close()
+
+		location := rsp.Header.Get("Location")
+		leader, err := url.Parse(location)
+
+		if err != nil {
+			return nil, err
+		}
+
+		endpoint := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
+		eng.endpoint = endpoint
+
+		return eng.query(sql)
 	}
 
 	defer rsp.Body.Close()
@@ -200,11 +264,37 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 
 	req.Header.Set("Content-Type", "application/json")
 
+	/*
+		rsp, err := eng.do(req)
+
+		if err != nil {
+			msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
+			return nil, errors.New(msg)
+		}
+	*/
+
 	rsp, err := eng.client.Do(req)
 
 	if err != nil {
 		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
 		return nil, errors.New(msg)
+	}
+
+	if rsp.StatusCode == 301 {
+
+		rsp.Body.Close()
+
+		location := rsp.Header.Get("Location")
+		leader, err := url.Parse(location)
+
+		if err != nil {
+			return nil, err
+		}
+
+		endpoint := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
+		eng.endpoint = endpoint
+
+		return eng.execute(sql)
 	}
 
 	defer rsp.Body.Close()
@@ -226,6 +316,73 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 	return &results, nil
 }
 
+func (eng *RqliteEngine) status() (*Status, error) {
+
+	req, err := http.NewRequest("GET", eng.endpoint+"/status", nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rsp, err := eng.client.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rsp.Body.Close()
+
+	body, err := ioutil.ReadAll(rsp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var status Status
+
+	err = json.Unmarshal(body, &status)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &status, nil
+}
+
+func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
+
+	rsp, err := eng.client.Do(req)
+
+	if err != nil {
+		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
+		return nil, errors.New(msg)
+	}
+
+	if rsp.StatusCode == 301 {
+
+		rsp.Body.Close()
+
+		location := rsp.Header.Get("Location")
+		leader, err := url.Parse(location)
+
+		if err != nil {
+			return nil, err
+		}
+
+		endpoint := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
+		eng.endpoint = endpoint
+
+		req.URL = leader
+
+		// FIX ME: why is req.Body being closed even though it's a *bytes.Buffer?
+		// https://golang.org/pkg/net/http/#NewRequest
+
+		return eng.do(req)
+	}
+
+	return rsp, err
+}
+
 func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 
 	client := new(http.Client)
@@ -239,6 +396,14 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 		mu:        mu,
 		client:    client,
 	}
+
+	_, err := eng.status()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// please set peers here
 
 	return &eng, nil
 }
