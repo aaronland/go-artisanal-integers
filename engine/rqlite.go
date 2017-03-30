@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"io/ioutil"
-	"log"
+	_ "log"
 	"net/http"
 	"net/url"
 	"sync"
@@ -19,6 +19,8 @@ import (
 type RqliteEngine struct {
 	artisanalinteger.Engine
 	endpoint  string
+	leader	  string
+	peers	  []string
 	key       string
 	increment int64
 	offset    int64
@@ -388,8 +390,12 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 	client := new(http.Client)
 	mu := new(sync.Mutex)
 
+	peers := make([]string, 0)
+
 	eng := RqliteEngine{
 		endpoint:  dsn,
+		leader:	   dsn,
+		peers:	   peers,
 		key:       "integers",
 		increment: 2,
 		offset:    1,
@@ -403,7 +409,7 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 		return nil, err
 	}
 
-	// please set peers here
+	// please set leader and peers here
 
 	return &eng, nil
 }
