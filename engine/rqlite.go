@@ -12,7 +12,7 @@ import (
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"io"
 	"io/ioutil"
-	"log"
+	_ "log"
 	"net/http"
 	"net/url"
 	"sync"
@@ -486,7 +486,6 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 			case <-timer:
 
 				leader, peers, err := get_rqlite_peers(eng.leader)
-				log.Println("PEERS", leader, peers)
 
 				if err != nil {
 					done <- true
