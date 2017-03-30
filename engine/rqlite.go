@@ -14,13 +14,13 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+	"time"
 )
 
 type RqliteEngine struct {
 	artisanalinteger.Engine
-	endpoint  string
-	leader	  string
-	peers	  []string
+	leader    string
+	peers     []string
 	key       string
 	increment int64
 	offset    int64
@@ -64,7 +64,47 @@ type RuntimeStatus struct {
 }
 
 // curl localhost:4003/status
-type StoreStatus interface{}
+type StoreStatus struct {
+	Addr         string       `json:"addr"`
+	ApplyTimeout string       `json:"apply_timeout"`
+	DbConf       DbConfStatus `json:"db_conf"`
+	Dir          string       `json:"dir"`
+	Leader       string       `json:"leader"`
+	Meta         MetaStatus   `json:"meta"`
+	Peers        []string     `json:"peers"`
+	Raft         RaftStatus   `json:"raft"`
+	Sqlite3      SqliteStatus `json:"sqlite3"`
+}
+
+type DbConfStatus struct {
+	DSN    string `json:"DSN"`
+	Memory bool   `json:"Memory"`
+}
+
+type MetaStatus struct {
+	APIPeers map[string]string `json:"APIPeers"`
+}
+
+type RaftStatus struct {
+	AppliedIndex      string `json:"applied_index"`
+	CommitIndex       string `json:"commit_index"`
+	FsmPending        string `json:"fsm_pending"`
+	LastContact       string `json:"last_contact"`
+	LastLogIndex      string `json:"last_log_index"`
+	LastLogTerm       string `json:"last_log_term"`
+	LastSnapshotIndex string `json:"last_snapshot_index"`
+	LastSnapshotTerm  string `json:"last_snapshot_term"`
+	NumPeers          string `json:"num_peers"`
+	State             string `json:"state"`
+	Term              string `json:"term"`
+}
+
+type SqliteStatus struct {
+	DNS           string `json:"DNS"`
+	FkConstraints string `json:"fk_constraints"`
+	Path          string `json:"memory"`
+	Version       string `json:"version"`
+}
 
 type QueryTime float64
 
@@ -101,6 +141,90 @@ type ExecuteResult struct {
 	RowsAffected int64     `json:"rows_affected"`
 	Time         QueryTime `json:"time"`
 	Error        string    `json:"error"`
+}
+
+func get_rqlite_status(endpoint string) (*Status, error) {
+
+	req, err := http.NewRequest("GET", endpoint+"/status", nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	client := new(http.Client)
+	rsp, err := client.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rsp.Body.Close()
+
+	body, err := ioutil.ReadAll(rsp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var status Status
+
+	err = json.Unmarshal(body, &status)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &status, nil
+}
+
+func get_rqlite_peers(endpoint string) (string, []string, error) {
+
+	var leader string
+	var peers []string
+
+	status, err := get_rqlite_status(endpoint)
+
+	if err != nil {
+		return leader, peers, err
+	}
+
+	store := status.Store
+	meta := store.Meta
+
+	/*
+
+		See what's going on here? We want to point to the thing on port 4003
+		and _not_ port 4004. It's weird. It appears to an Rqlite thing not a
+		fast thing. Maybe? Dunno... (20170330/thisisaaronland)
+
+	        "leader": "127.0.0.1:4004",
+	        "meta": {
+	            "APIPeers": {
+	                "127.0.0.1:4002": "localhost:4001",
+	                "127.0.0.1:4004": "localhost:4003"
+	            }
+	        },
+	        "peers": [
+	            "127.0.0.1:4004",
+	            "127.0.0.1:4002"
+	        ],
+
+	*/
+
+	leader, ok := meta.APIPeers[store.Leader]
+
+	if !ok {
+		msg := fmt.Sprintf("Could not find entry for %s in API peers", store.Leader)
+		return leader, peers, errors.New(msg)
+	}
+
+	leader = fmt.Sprintf("http://%s", leader)
+
+	for _, host := range meta.APIPeers {
+		peers = append(peers, fmt.Sprintf("http://%s", host))
+	}
+
+	return leader, peers, nil
 }
 
 func (eng *RqliteEngine) SetLastInt(i int64) error {
@@ -185,7 +309,7 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 	params := url.Values{}
 	params.Set("q", sql)
 
-	req, err := http.NewRequest("GET", eng.endpoint+"/db/query", nil)
+	req, err := http.NewRequest("GET", eng.leader+"/db/query", nil)
 
 	if err != nil {
 		return nil, err
@@ -221,8 +345,8 @@ func (eng *RqliteEngine) query(sql string) (*QueryResults, error) {
 			return nil, err
 		}
 
-		endpoint := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
-		eng.endpoint = endpoint
+		new_leader := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
+		eng.leader = new_leader
 
 		return eng.query(sql)
 	}
@@ -258,7 +382,7 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 
 	buf := bytes.NewBuffer(b)
 
-	req, err := http.NewRequest("POST", eng.endpoint+"/db/execute", buf)
+	req, err := http.NewRequest("POST", eng.leader+"/db/execute", buf)
 
 	if err != nil {
 		return nil, err
@@ -293,8 +417,8 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 			return nil, err
 		}
 
-		endpoint := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
-		eng.endpoint = endpoint
+		new_leader := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
+		eng.leader = new_leader
 
 		return eng.execute(sql)
 	}
@@ -318,39 +442,6 @@ func (eng *RqliteEngine) execute(sql string) (*ExecuteResults, error) {
 	return &results, nil
 }
 
-func (eng *RqliteEngine) status() (*Status, error) {
-
-	req, err := http.NewRequest("GET", eng.endpoint+"/status", nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	rsp, err := eng.client.Do(req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rsp.Body.Close()
-
-	body, err := ioutil.ReadAll(rsp.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var status Status
-
-	err = json.Unmarshal(body, &status)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &status, nil
-}
-
 func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 
 	rsp, err := eng.client.Do(req)
@@ -371,8 +462,8 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 			return nil, err
 		}
 
-		endpoint := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
-		eng.endpoint = endpoint
+		new_leader := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
+		eng.leader = new_leader
 
 		req.URL = leader
 
@@ -387,15 +478,18 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 
 func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 
+	leader, peers, err := get_rqlite_peers(dsn)
+
+	if err != nil {
+		return nil, err
+	}
+
 	client := new(http.Client)
 	mu := new(sync.Mutex)
 
-	peers := make([]string, 0)
-
 	eng := RqliteEngine{
-		endpoint:  dsn,
-		leader:	   dsn,
-		peers:	   peers,
+		leader:    leader,
+		peers:     peers,
 		key:       "integers",
 		increment: 2,
 		offset:    1,
@@ -403,13 +497,35 @@ func NewRqliteEngine(dsn string) (*RqliteEngine, error) {
 		client:    client,
 	}
 
-	_, err := eng.status()
+	go func() {
 
-	if err != nil {
-		return nil, err
-	}
+		timer := time.NewTimer(time.Second * 1).C
+		done := make(chan bool)
 
-	// please set leader and peers here
+		for {
+			select {
+			case <-timer:
+
+				leader, peers, err := get_rqlite_peers(eng.leader)
+
+				if err != nil {
+					done <- true
+				}
+
+				if leader != eng.leader {
+					eng.mu.Lock()
+					eng.leader = leader
+					eng.peers = peers
+					eng.mu.Unlock()
+				}
+
+			case <-done:
+				break
+			default:
+				//
+			}
+		}
+	}()
 
 	return &eng, nil
 }
