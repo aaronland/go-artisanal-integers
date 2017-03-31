@@ -15,6 +15,7 @@ import (
 	_ "log"
 	"net/http"
 	"net/url"
+	"os"
 	"sync"
 	"time"
 )
@@ -84,7 +85,14 @@ type DbConfStatus struct {
 }
 
 type MetaStatus struct {
-	APIPeers map[string]string `json:"APIPeers"`
+	APIPeers APIPeersStatus `json:"APIPeers"`
+}
+
+type APIPeersStatus map[string]string
+
+func (p APIPeersStatus) String() string {
+	b, _ := json.Marshal(p)
+	return string(b)
 }
 
 type RaftStatus struct {
@@ -216,14 +224,22 @@ func get_rqlite_peers(endpoint string) (string, []string, error) {
 	leader, ok := meta.APIPeers[store.Leader]
 
 	if !ok {
-		msg := fmt.Sprintf("Could not find entry for %s in API peers", store.Leader)
-		return leader, peers, errors.New(msg)
+
+		if leader == "" {
+			msg := fmt.Sprintf("Could not find entry for '%s' in API peers (%s)", store.Leader, meta.APIPeers)
+			return leader, peers, errors.New(msg)
+		}
 	}
 
 	leader = fmt.Sprintf("http://%s", leader)
 
 	for _, host := range meta.APIPeers {
-		peers = append(peers, fmt.Sprintf("http://%s", host))
+
+		p := fmt.Sprintf("http://%s", host)
+
+		if p != endpoint {
+			peers = append(peers, p)
+		}
 	}
 
 	return leader, peers, nil
@@ -272,6 +288,11 @@ func (eng *RqliteEngine) NextInt() (int64, error) {
 
 	if err != nil {
 		return -1, err
+	}
+
+	if len(results.Results) == 0 {
+		msg := fmt.Sprintf("Null results '%s' (%s)", results.Results, eng.leader)
+		return -1, errors.New(msg)
 	}
 
 	r := results.Results[0]
@@ -415,14 +436,72 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 		req.Body = ioutil.NopCloser(buf)
 	}
 
+	var retry bool
+	var retry_leader string
+
 	rsp, err := eng.client.Do(req)
 
-	if err != nil {
-		msg := fmt.Sprintf("HTTP request failed: %s", err.Error())
-		return nil, errors.New(msg)
-	}
+	if err != nil && len(eng.peers) > 0 {
 
-	if rsp.StatusCode == 301 {
+		var new_leader string
+		var new_peers []string
+
+		keep_trying := true
+
+		counter := 0
+		max := len(eng.peers) * 100
+
+		eng.mu.Lock()
+
+		for {
+
+			counter += 1
+
+			if counter >= max {
+				fmt.Fprintf(os.Stderr, "Couldn't find new leader after %d tries so giving up\n", max)
+				break
+			}
+
+			fmt.Fprintf(os.Stderr, "Couldn't connect to leader so trying to see if the peers are rebalancing themselves (%d/%d)...\n", counter, max)
+
+			for _, pr := range eng.peers {
+
+				leader, peers, err := get_rqlite_peers(pr)
+
+				if err != nil {
+					keep_trying = false
+					break
+				}
+
+				if leader != eng.leader {
+
+					new_leader = leader
+					new_peers = peers
+
+					keep_trying = false
+					retry = true
+				}
+			}
+
+			if !keep_trying {
+				break
+			} else {
+				time.Sleep(200 * time.Millisecond)
+			}
+		}
+
+		if retry {
+
+			eng.leader = new_leader
+			eng.peers = new_peers
+
+			retry_leader = eng.leader
+			retry = true
+		}
+
+		eng.mu.Unlock()
+
+	} else if rsp.StatusCode == 301 {
 
 		rsp.Body.Close()
 
@@ -436,7 +515,22 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 		new_leader := fmt.Sprintf("%s://%s", leader.Scheme, leader.Host)
 		eng.leader = new_leader
 
-		req.URL = leader
+		retry = true
+		retry_leader = new_leader
+
+	} else {
+		retry = false
+	}
+
+	if retry {
+
+		new_url, err := url.Parse(retry_leader + req.URL.Path)
+
+		if err != nil {
+			return nil, err
+		}
+
+		req.URL = new_url
 
 		// Hack - see below
 
@@ -446,8 +540,8 @@ func (eng *RqliteEngine) do(req *http.Request) (*http.Response, error) {
 		}
 
 		// FIX ME: why is req.Body being closed even though it's a *bytes.Buffer?
-		// Because an older version of Go
 		// https://golang.org/pkg/net/http/#NewRequest
+		// Answer: Because an older version of Go
 
 		return eng.do(req)
 	}
