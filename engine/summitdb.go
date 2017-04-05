@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func make_pool(dsn string) (*redis.Pool, error) {
+func make_summitdb_pool(dsn string) (*redis.Pool, error) {
 
 	pool := &redis.Pool{
 		MaxActive: 1000,
@@ -32,7 +32,7 @@ func make_pool(dsn string) (*redis.Pool, error) {
 	return pool, nil
 }
 
-func get_peers(pool *redis.Pool) (string, []string, error) {
+func get_summitdb_peers(pool *redis.Pool) (string, []string, error) {
 
 	var leader string
 	var peers []string
@@ -194,14 +194,14 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 
 					for _, pr := range eng.peers {
 
-						pl, err := make_pool(pr)
+						pl, err := make_summitdb_pool(pr)
 
 						if err != nil {
 							keep_trying = false
 							break
 						}
 
-						leader, peers, err := get_peers(pl)
+						leader, peers, err := get_summitdb_peers(pl)
 
 						if err != nil {
 							keep_trying = false
@@ -249,7 +249,7 @@ func (eng *SummitDBEngine) NextInt() (int64, error) {
 			// going to call ourselves recursively here which does not invoke
 			// the defer robot (20170327/thisisaaronland)
 
-			pool, err := make_pool(retry_host)
+			pool, err := make_summitdb_pool(retry_host)
 
 			if err != nil {
 				eng.mu.Unlock()
@@ -300,13 +300,13 @@ func (eng *SummitDBEngine) nextInt() (int64, error) {
 
 func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 
-	pool, err := make_pool(dsn)
+	pool, err := make_summitdb_pool(dsn)
 
 	if err != nil {
 		return nil, err
 	}
 
-	leader, peers, err := get_peers(pool)
+	leader, peers, err := get_summitdb_peers(pool)
 
 	mu := new(sync.Mutex)
 
@@ -328,7 +328,7 @@ func NewSummitDBEngine(dsn string) (*SummitDBEngine, error) {
 		for {
 			select {
 			case <-timer:
-				_, _, err := get_peers(eng.pool)
+				_, _, err := get_summitdb_peers(eng.pool)
 
 				if err != nil {
 					done <- true

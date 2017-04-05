@@ -14,8 +14,25 @@ func NewArtisanalEngine(db string, dsn string) (artisanalinteger.Engine, error) 
 	switch db {
 
 	case "redis":
+
+		if dsn == "" {
+			dsn = "localhost:6379"
+		}
+
 		eng, err = engine.NewRedisEngine(dsn)
+	case "rqlite":
+
+		if dsn == "" {
+			dsn = "http://localhost:4001"
+		}
+
+		eng, err = engine.NewRqliteEngine(dsn)
 	case "summitdb":
+
+		if dsn == "" {
+			dsn = "localhost:7481"
+		}
+
 		eng, err = engine.NewSummitDBEngine(dsn)
 	case "mysql":
 		eng, err = engine.NewMySQLEngine(dsn)

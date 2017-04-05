@@ -35,5 +35,6 @@ fmt:
 	go fmt util/*.go
 
 bin:    self
+	if test ! -d bin; then mkdir bin; fi
 	@GOPATH=$(shell pwd) go build -o bin/int cmd/int.go
 	@GOPATH=$(shell pwd) go build -o bin/intd cmd/intd.go

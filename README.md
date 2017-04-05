@@ -43,6 +43,8 @@ func main() {
 
 	case "redis":
 		eng, err = engine.NewRedisEngine(*dsn)
+	case "rqlite":
+		eng, err = engine.NewRqliteEngine(*dsn)
 	case "summitdb":
 		eng, err = engine.NewSummitDBEngine(*dsn)
 	case "mysql":
@@ -84,9 +86,68 @@ type Engine interface {
 
 _Please write me_
 
+#### Schema
+
+```
+CREATE TABLE `integers` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `stub` char(1) NOT NULL DEFAULT '',
+  PRIMARY KEY  (`id`),
+  UNIQUE KEY `stub` (`stub`)
+) ENGINE=MyISAM;
+```
+
 ### Redis
 
 _Please write me_
+
+```
+$> ./bin/int -engine redis -dsn 'redis://localhost:6379' -continuous
+8
+```
+
+### Rqlite
+
+_Please write me_
+
+This engine is not feature complete yet and still has bugs. It should be considered experimental.
+
+```
+$> ./bin/int -engine rqlite -dsn http://localhost:4001
+31
+```
+
+Also, unless I am just doing it wrong when a single (following) peer is the only node left in a rqlite cluster it does not appear to know how to promote itself to be the leader. Instead it gets trapped in an endless loop like this:
+
+```
+2017/03/31 15:28:56 [WARN] raft: Election timeout reached, restarting election
+2017/03/31 15:28:56 [INFO] raft: Node at 127.0.0.1:4006 [Candidate] entering Candidate state
+2017/03/31 15:28:56 [ERR] raft: Failed to make RequestVote RPC to 127.0.0.1:4004: dial tcp 127.0.0.1:4004: getsockopt: connection refused
+2017/03/31 15:28:56 [ERR] raft: Failed to make RequestVote RPC to 127.0.0.1:4002: dial tcp 127.0.0.1:4002: getsockopt: connection refused
+2017/03/31 15:28:56 [DEBUG] raft: Votes needed: 2
+2017/03/31 15:28:56 [DEBUG] raft: Vote granted from 127.0.0.1:4006. Tally: 1
+2017/03/31 15:28:57 [WARN] raft: Election timeout reached, restarting election
+2017/03/31 15:28:57 [INFO] raft: Node at 127.0.0.1:4006 [Candidate] entering Candidate state
+2017/03/31 15:28:57 [ERR] raft: Failed to make RequestVote RPC to 127.0.0.1:4004: dial tcp 127.0.0.1:4004: getsockopt: connection refused
+2017/03/31 15:28:57 [ERR] raft: Failed to make RequestVote RPC to 127.0.0.1:4002: dial tcp 127.0.0.1:4002: getsockopt: connection refused
+2017/03/31 15:28:57 [DEBUG] raft: Votes needed: 2
+2017/03/31 15:28:57 [DEBUG] raft: Vote granted from 127.0.0.1:4006. Tally: 1
+2017/03/31 15:28:59 [WARN] raft: Election timeout reached, restarting election
+2017/03/31 15:28:59 [INFO] raft: Node at 127.0.0.1:4006 [Candidate] entering Candidate state
+2017/03/31 15:28:59 [ERR] raft: Failed to make RequestVote RPC to 127.0.0.1:4004: dial tcp 127.0.0.1:4004: getsockopt: connection refused
+2017/03/31 15:28:59 [ERR] raft: Failed to make RequestVote RPC to 127.0.0.1:4002: dial tcp 127.0.0.1:4002: getsockopt: connection refused
+2017/03/31 15:28:59 [DEBUG] raft: Votes needed: 2
+2017/03/31 15:28:59 [DEBUG] raft: Vote granted from 127.0.0.1:4006. Tally: 1
+```
+
+But maybe I am just doing it wrong?
+
+#### Schema
+
+```
+CREATE TABLE integers (id INTEGER PRIMARY KEY AUTOINCREMENT, stub CHAR(1))
+CREATE UNIQUE INDEX `by_stub` ON integers(stub)
+```
 
 ### SummitDB
 
@@ -243,6 +304,8 @@ $> curl localhost:8080
 
 ### Anecdotal
 
+#### MySQL
+
 Running `intd` backed by MySQL on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 500 concurrent users, using siege:
 
 ```
@@ -265,6 +328,33 @@ Failed transactions:		0
 Longest transaction:		1.70
 Shortest transaction:		0.00
 ```
+
+#### Redis
+
+Running `intd` backed by Redis on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 1000 concurrent users, using siege:
+
+```
+siege -c 1000 http://localhost:8080
+** SIEGE 3.0.5
+** Preparing 1000 concurrent users for battle.
+The server is now under siege...^C
+Lifting the server siege...      done.
+
+Transactions:			110761 hits
+Availability:			100.00 %
+Elapsed time:			63.92 secs
+Data transferred:		0.59 MB
+Response time:			0.06 secs
+Transaction rate:		1732.81 trans/sec
+Throughput:			0.01 MB/sec
+Concurrency:			98.32
+Successful transactions:	110761
+Failed transactions:		0
+Longest transaction:		6.24
+Shortest transaction:		0.00
+```
+
+#### SummitDB
 
 Running `intd` backed by SummitDB (running with [high consistency](https://github.com/tidwall/summitdb#read-consistency)) on a vanilla Vagrant machine (running Ubuntu 14.04) on a laptop against 100 concurrent users, using siege:
 
