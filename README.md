@@ -67,9 +67,79 @@ func main() {
 }
 ```
 
+### Fancy
+
+```
+import (
+	"flag"
+	"github.com/thisisaaronland/go-artisanal-integers/util"
+	"log"
+)
+
+func main() {
+
+	var db = flag.String("engine", "", "The name of the artisanal integer engine to use.")
+	var dsn = flag.String("dsn", "", "The data source name (dsn) for connecting to the artisanal integer engine.")
+	var last = flag.Int("set-last-int", 0, "Set the last known integer.")
+	var offset = flag.Int("set-offset", 0, "Set the offset used to mint integers.")
+	var increment = flag.Int("set-increment", 0, "Set the increment used to mint integers.")
+	var continuous = flag.Bool("continuous", false, "Continuously mint integers. This is mostly only useful for debugging.")
+
+	flag.Parse()
+
+	eng, err := util.NewArtisanalEngine(*db, *dsn)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if *last != 0 {
+
+		err = eng.SetLastInt(int64(*last))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *increment != 0 {
+
+		err = eng.SetIncrement(int64(*increment))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if *offset != 0 {
+
+		err = eng.SetOffset(int64(*offset))
+
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	for {
+
+		next, err := eng.NextInt()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Println(next)
+
+		if !*continuous {
+			break
+		}
+	}
+}	
+```
+
 ## Engines
 
-_Please write me_
+An "engine" is the interface between your code and an underlying data model (typically a database) for minting artisanal integers. The interface looks like this:
 
 ```
 type Engine interface {
@@ -81,6 +151,10 @@ type Engine interface {
 	SetIncrement(int64) error
 }
 ```
+
+### Memory
+
+_Please write me_
 
 ### MySQL
 
