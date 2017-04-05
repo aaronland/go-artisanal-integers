@@ -464,3 +464,4 @@ _Note: This pegged the (single) CPU on the virtual machine._
 * https://nelsonslog.wordpress.com/2012/08/25/artisinal-integers-part-2/
 * http://www.aaronland.info/weblog/2012/12/01/coffee-and-wifi/#timepixels
 * https://mapzen.com/blog/mapzen-acquires-mission-integers/
+* http://code.flickr.net/2010/02/08/ticket-servers-distributed-unique-primary-keys-on-the-cheap/
