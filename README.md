@@ -33,8 +33,8 @@ import (
 
 func main() {
 
-	var db = flag.String("engine", "", "...")
-	var dsn = flag.String("dsn", "", "...")
+	var db = flag.String("engine", "", "The name of the artisanal integer engine to use.")
+	var dsn = flag.String("dsn", "", "The data source name (dsn) for connecting to the artisanal integer engine.")
 
 	var eng artisanalinteger.Engine
 	var err error
@@ -180,6 +180,25 @@ _Please write me_
 Generate an artisanal integer on the command line.
 
 ```
+./bin/int -h
+Usage of ./bin/int:
+  -continuous
+    	Continuously mint integers. This is mostly only useful for debugging.
+  -dsn string
+    	The data source name (dsn) for connecting to the artisanal integer engine.
+  -engine string
+    	The name of the artisanal integer engine to use.
+  -set-increment int
+    	Set the increment used to mint integers.
+  -set-last-int int
+    	Set the last known integer.
+  -set-offset int
+    	Set the offset used to mint integers.
+```
+
+For example:
+
+```
 $> ./bin/int -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
 182583
 ```
@@ -189,10 +208,31 @@ $> ./bin/int -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
 Generate an artisanal integer as a service.
 
 ```
+./bin/intd -h
+Usage of ./bin/intd:
+  -dsn string
+    	The data source name (dsn) for connecting to the artisanal integer engine.
+  -engine string
+    	The name of the artisanal integer engine to use.
+  -host string
+    	The hostname to listen for requests on (default "localhost")
+  -port int
+    	The port number to listen for requests on (default 8080)
+  -set-increment int
+    	Set the increment used to mint integers.
+  -set-last-int int
+    	Set the last known integer.
+  -set-offset int
+    	Set the offset used to mint integers.
+```
+
+For example:
+
+```
 $> ./bin/intd -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
 ```
 
-And then
+And then:
 
 ```
 $> curl localhost:8080

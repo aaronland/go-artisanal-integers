@@ -12,12 +12,12 @@ import (
 
 func main() {
 
-	var db = flag.String("engine", "", "...")
-	var dsn = flag.String("dsn", "", "...")
-	var last = flag.Int("last-id", 0, "...")
-	var offset = flag.Int("offset", 0, "...")
-	var increment = flag.Int("increment", 0, "...")
-	var continuous = flag.Bool("continuous", false, "...")
+	var db = flag.String("engine", "", "The name of the artisanal integer engine to use.")
+	var dsn = flag.String("dsn", "", "The data source name (dsn) for connecting to the artisanal integer engine.")
+	var last = flag.Int("set-last-int", 0, "Set the last known integer.")
+	var offset = flag.Int("set-offset", 0, "Set the offset used to mint integers.")
+	var increment = flag.Int("set-increment", 0, "Set the increment used to mint integers.")
+	var continuous = flag.Bool("continuous", false, "Continuously mint integers. This is mostly only useful for debugging.")
 
 	flag.Parse()
 
