@@ -97,6 +97,6 @@ func NewMemoryEngine(dsn string) (*MemoryEngine, error) {
 	}
 
 	// PLEASE WRITE ME: check to see if we should read a value persisted to disk
-	
+
 	return &eng, nil
 }

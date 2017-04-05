@@ -13,6 +13,14 @@ func NewArtisanalEngine(db string, dsn string) (artisanalinteger.Engine, error) 
 
 	switch db {
 
+	case "memory":
+
+		eng, err = engine.NewMemoryEngine(dsn)
+
+	case "mysql":
+
+		eng, err = engine.NewMySQLEngine(dsn)
+
 	case "redis":
 
 		if dsn == "" {
@@ -20,6 +28,7 @@ func NewArtisanalEngine(db string, dsn string) (artisanalinteger.Engine, error) 
 		}
 
 		eng, err = engine.NewRedisEngine(dsn)
+
 	case "rqlite":
 
 		if dsn == "" {
@@ -27,6 +36,7 @@ func NewArtisanalEngine(db string, dsn string) (artisanalinteger.Engine, error) 
 		}
 
 		eng, err = engine.NewRqliteEngine(dsn)
+
 	case "summitdb":
 
 		if dsn == "" {
@@ -34,8 +44,7 @@ func NewArtisanalEngine(db string, dsn string) (artisanalinteger.Engine, error) 
 		}
 
 		eng, err = engine.NewSummitDBEngine(dsn)
-	case "mysql":
-		eng, err = engine.NewMySQLEngine(dsn)
+
 	default:
 		return nil, errors.New("Invalid engine")
 	}
