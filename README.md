@@ -176,7 +176,7 @@ CREATE TABLE `integers` (
 _Please write me_
 
 ```
-$> ./bin/int -engine redis -dsn 'redis://localhost:6379' -continuous
+$> ./bin/int -engine redis -dsn 'redis://localhost:6379'
 8
 ```
 
