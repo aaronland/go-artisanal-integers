@@ -13,3 +13,9 @@ type Service interface {
 	NextInt() (int64, error)
 	LastInt() (int64, error)
 }
+
+// EXPERIMENTAL
+
+type Server interface {
+     Listen() error
+}
