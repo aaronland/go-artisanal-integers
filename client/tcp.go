@@ -1,5 +1,7 @@
 package client
 
+// EXPERIMENTAL
+
 import (
 	"bufio"
 	"github.com/thisisaaronland/go-artisanal-integers"
