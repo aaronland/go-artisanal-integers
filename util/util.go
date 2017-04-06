@@ -3,6 +3,7 @@ package util
 import (
 	"errors"
 	"github.com/thisisaaronland/go-artisanal-integers"
+	"github.com/thisisaaronland/go-artisanal-integers/client"
 	"github.com/thisisaaronland/go-artisanal-integers/engine"
 	"github.com/thisisaaronland/go-artisanal-integers/server"
 )
@@ -86,4 +87,26 @@ func NewArtisanalServer(proto string, address string) (artisanalinteger.Server, 
 
 	return svr, nil
 
+}
+
+func NewArtisanalClient(proto string, address string) (artisanalinteger.Client, error) {
+
+	var cl artisanalinteger.Client
+	var err error
+
+	switch proto {
+
+	case "tcp":
+
+		cl, err = client.NewTCPClient(address)
+
+	default:
+		return nil, errors.New("Invalid protocol")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cl, nil
 }

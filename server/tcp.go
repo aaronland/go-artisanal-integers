@@ -39,6 +39,8 @@ func (s *TCPServer) ListenAndServe(service artisanalinteger.Service) error {
 			continue
 		}
 
+		// log.Println(conn.RemoteAddr().String())
+
 		go func() {
 
 			defer conn.Close()
@@ -52,7 +54,7 @@ func (s *TCPServer) ListenAndServe(service artisanalinteger.Service) error {
 			str_i := strconv.FormatInt(i, 10)
 
 			bufout := bufio.NewWriter(conn)
-			bufout.WriteString(str_i)
+			bufout.WriteString(str_i + "\n")
 			bufout.Flush()
 		}()
 	}

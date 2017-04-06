@@ -3,11 +3,13 @@ prep:
 
 self:   prep
 	if test -d src/github.com/thisisaaronland/go-artisanal-integers; then rm -rf src/github.com/thisisaaronland/go-artisanal-integers; fi
+	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/client
 	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/engine
 	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/server
 	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/service
 	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/util
 	cp *.go src/github.com/thisisaaronland/go-artisanal-integers/
+	cp client/*.go src/github.com/thisisaaronland/go-artisanal-integers/client/
 	cp engine/*.go src/github.com/thisisaaronland/go-artisanal-integers/engine/
 	cp server/*.go src/github.com/thisisaaronland/go-artisanal-integers/server/
 	cp service/*.go src/github.com/thisisaaronland/go-artisanal-integers/service/
@@ -31,6 +33,7 @@ vendor-deps: rmdeps deps
 
 fmt:
 	go fmt *.go
+	go fmt client/*.go
 	go fmt cmd/*.go
 	go fmt engine/*.go
 	go fmt server/*.go

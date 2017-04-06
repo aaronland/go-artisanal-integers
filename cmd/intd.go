@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/thisisaaronland/go-artisanal-integers/server"
 	"github.com/thisisaaronland/go-artisanal-integers/service"
 	"github.com/thisisaaronland/go-artisanal-integers/util"
 	"log"
@@ -12,6 +11,7 @@ import (
 
 func main() {
 
+	var proto = flag.String("protocol", "http", "...")
 	var host = flag.String("host", "localhost", "The hostname to listen for requests on")
 	var port = flag.Int("port", 8080, "The port number to listen for requests on")
 
@@ -64,7 +64,7 @@ func main() {
 
 	address := fmt.Sprintf("%s:%d", *host, *port)
 
-	s, err := server.NewHTTPServer(address)
+	s, err := util.NewArtisanalServer(*proto, address)
 
 	if err != nil {
 		log.Fatal(err)

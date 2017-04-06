@@ -17,3 +17,7 @@ type Service interface {
 type Server interface {
 	ListenAndServe(Service) error
 }
+
+type Client interface {
+	NextInt() (int64, error)
+}
