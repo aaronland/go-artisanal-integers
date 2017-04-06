@@ -17,5 +17,5 @@ type Service interface {
 // EXPERIMENTAL
 
 type Server interface {
-     Listen() error
+	ListenAndServer(Service) error
 }

@@ -1,39 +1,32 @@
 package server
 
-// EXPERIMENTAL
-
 import (
-        "fmt"
-	"github.com/facebookgo/grace/gracehttp"	
+	"github.com/facebookgo/grace/gracehttp"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"log"
 	"net/http"
-	"strconv"		
+	"strconv"
 )
 
 type HTTPServer struct {
 	artisanalinteger.Server
-	service artisanalinteger.Service
-	host string
-	port int
+	address string
 }
 
-func NewHTTPServer (service artisanalinteger.Service) (*HTTPServer, error) {
+func NewHTTPServer(address string) (*HTTPServer, error) {
 
-     server := HTTPServer{
-     	    service: service,
-	    host: "localhost",
-	    port: 8080
-     }
+	server := HTTPServer{
+		address: address,
+	}
 
-     return &server, nil
+	return &server, nil
 }
 
-func (s *HTTPServer) Listen() error {
+func (s *HTTPServer) ListenAndServe(service artisanalinteger.Service) error {
 
 	handler := func(rsp http.ResponseWriter, req *http.Request) {
 
-		next, err := s.service.NextInt()
+		next, err := service.NextInt()
 
 		if err != nil {
 			http.Error(rsp, err.Error(), http.StatusBadRequest)
@@ -50,12 +43,11 @@ func (s *HTTPServer) Listen() error {
 		rsp.Write(b)
 	}
 
-	endpoint := fmt.Sprintf("%s:%d", s.host, s.port)
-	log.Println("listening on ", endpoint)
+	log.Println("listening on", s.address)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler)
 
-	err := gracehttp.Serve(&http.Server{Addr: endpoint, Handler: mux})
+	err := gracehttp.Serve(&http.Server{Addr: s.address, Handler: mux})
 	return err
 }
