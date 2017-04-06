@@ -14,8 +14,6 @@ type Service interface {
 	LastInt() (int64, error)
 }
 
-// EXPERIMENTAL
-
 type Server interface {
-	ListenAndServer(Service) error
+	ListenAndServe(Service) error
 }
