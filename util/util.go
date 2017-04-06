@@ -96,6 +96,14 @@ func NewArtisanalClient(proto string, address string) (artisanalinteger.Client, 
 
 	switch proto {
 
+	case "http":
+
+		if address == "" {
+			address = "localhost:8080"
+		}
+
+		cl, err = client.NewHTTPClient(address)
+		
 	case "tcp":
 
 		cl, err = client.NewTCPClient(address)
