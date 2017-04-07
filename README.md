@@ -338,7 +338,7 @@ $> ./bin/int -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
 182583
 ```
 
-### intd
+### intd-server
 
 Generate an artisanal integer as a service.
 

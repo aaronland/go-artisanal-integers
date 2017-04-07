@@ -43,4 +43,5 @@ fmt:
 bin:    self
 	if test ! -d bin; then mkdir bin; fi
 	@GOPATH=$(shell pwd) go build -o bin/int cmd/int.go
-	@GOPATH=$(shell pwd) go build -o bin/intd cmd/intd.go
+	@GOPATH=$(shell pwd) go build -o bin/intd-client cmd/intd-client.go
+	@GOPATH=$(shell pwd) go build -o bin/intd-server cmd/intd-server.go
