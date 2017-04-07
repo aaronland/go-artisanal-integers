@@ -13,3 +13,11 @@ type Service interface {
 	NextInt() (int64, error)
 	LastInt() (int64, error)
 }
+
+type Server interface {
+	ListenAndServe(Service) error
+}
+
+type Client interface {
+	NextInt() (int64, error)
+}

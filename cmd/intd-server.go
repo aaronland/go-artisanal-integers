@@ -3,17 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/facebookgo/grace/gracehttp"
 	"github.com/thisisaaronland/go-artisanal-integers/service"
 	"github.com/thisisaaronland/go-artisanal-integers/util"
 	"log"
-	"net/http"
 	"os"
-	"strconv"
 )
 
 func main() {
 
+	var proto = flag.String("protocol", "http", "...")
 	var host = flag.String("host", "localhost", "The hostname to listen for requests on")
 	var port = flag.Int("port", 8080, "The port number to listen for requests on")
 
@@ -64,32 +62,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	handler := func(rsp http.ResponseWriter, req *http.Request) {
+	address := fmt.Sprintf("%s:%d", *host, *port)
 
-		next, err := svc.NextInt()
+	s, err := util.NewArtisanalServer(*proto, address)
 
-		if err != nil {
-			http.Error(rsp, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		str_next := strconv.FormatInt(next, 10)
-
-		b := []byte(str_next)
-
-		rsp.Header().Set("Content-Type", "text/plain")
-		rsp.Header().Set("Content-Length", strconv.Itoa(len(b)))
-
-		rsp.Write(b)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	endpoint := fmt.Sprintf("%s:%d", *host, *port)
-	log.Println("listening on ", endpoint)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", handler)
-
-	err = gracehttp.Serve(&http.Server{Addr: endpoint, Handler: mux})
+	err = s.ListenAndServe(svc)
 
 	if err != nil {
 		log.Fatal(err)
