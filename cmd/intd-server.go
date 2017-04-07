@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	var proto = flag.String("protocol", "http", "...")
+	var proto = flag.String("protocol", "http", "The protocol for the server to implement. Valid options are: http,tcp.")
 	var host = flag.String("host", "localhost", "The hostname to listen for requests on")
 	var port = flag.Int("port", 8080, "The port number to listen for requests on")
 

@@ -343,7 +343,7 @@ $> ./bin/int -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
 Generate an artisanal integer as a service.
 
 ```
-./bin/intd -h
+./bin/intd-server -h
 Usage of ./bin/intd:
   -dsn string
     	The data source name (dsn) for connecting to the artisanal integer engine.
@@ -353,6 +353,8 @@ Usage of ./bin/intd:
     	The hostname to listen for requests on (default "localhost")
   -port int
     	The port number to listen for requests on (default 8080)
+  -protocol string
+    	The protocol for the server to implement. Valid options are: http,tcp. (default "http")
   -set-increment int
     	Set the increment used to mint integers.
   -set-last-int int
@@ -364,7 +366,7 @@ Usage of ./bin/intd:
 For example:
 
 ```
-$> ./bin/intd -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
+$> ./bin/intd-server -protocol http -engine mysql -dsn '{USER}:{PSWD}@/{DATABASE}'
 ```
 
 And then:
