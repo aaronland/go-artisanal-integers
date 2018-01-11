@@ -15,6 +15,8 @@ RUN cd /go-artisanal-integers; make bin
 
 FROM alpine
 
+RUN apk add --update mysql 
+
 COPY --from=build-env /go-artisanal-integers/bin/intd-server /intd-server
 
 EXPOSE 8080
