@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/aaronland/go-artisanal-integers"
 	"io/ioutil"
+	_ "log"
 	"net/http"
 	"strconv"
 )

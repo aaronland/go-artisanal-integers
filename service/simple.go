@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/aaronland/go-artisanal-integers"
+	"github.com/aaronland/go-artisanal-integers/utils"
 )
 
 type SimpleService struct {
@@ -19,7 +20,17 @@ func NewSimpleService(eng artisanalinteger.Engine) (*SimpleService, error) {
 }
 
 func (svc *SimpleService) NextInt() (int64, error) {
-	return svc.engine.NextInt()
+	i, err := svc.engine.NextInt()
+
+	if err != nil {
+		return -1, err
+	}
+
+	if utils.IsLondonInteger(i) {
+		return svc.NextInt()
+	}
+
+	return i, nil
 }
 
 func (svc *SimpleService) LastInt() (int64, error) {

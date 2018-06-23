@@ -9,6 +9,7 @@ self:   prep
 	cp -r engine src/github.com/aaronland/go-artisanal-integers/
 	cp -r server src/github.com/aaronland/go-artisanal-integers/
 	cp -r service src/github.com/aaronland/go-artisanal-integers/
+	cp -r utils src/github.com/aaronland/go-artisanal-integers/
 	# if test -d vendor; then cp -r vendor/* src/; fi
 
 rmdeps:
@@ -30,6 +31,7 @@ fmt:
 	go fmt engine/*.go
 	go fmt server/*.go
 	go fmt service/*.go
+	go fmt utils/*.go
 
 bin:    self
 	if test ! -d bin; then mkdir bin; fi
