@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"log"
+	_ "log"
 )
 
 // no, really...
@@ -10,8 +10,6 @@ import (
 func IsLondonInteger(i int64) bool {
 
 	test := i % 9
-
-	log.Println("LONDON", i, test)
 
 	if test == 0 {
 		return true

@@ -20,6 +20,7 @@ func NewSimpleService(eng artisanalinteger.Engine) (*SimpleService, error) {
 }
 
 func (svc *SimpleService) NextInt() (int64, error) {
+
 	i, err := svc.engine.NextInt()
 
 	if err != nil {
