@@ -21,6 +21,10 @@ func NewArtisanalServer(proto string, address string) (artisanalinteger.Server, 
 
 		svr, err = NewHTTPServer(address)
 
+	case "LAMBDA":
+
+		svr, err = NewLambdaServer()
+
 	case "TCP":
 
 		svr, err = NewTCPServer(address)

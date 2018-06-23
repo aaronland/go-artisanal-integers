@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/aaronland/go-artisanal-integers"
+	"github.com/aaronland/go-artisanal-integers/http"
 	"log"
-	"net/http"
-	"strconv"
+	gohttp "net/http"
 )
 
 type HTTPServer struct {
@@ -23,30 +23,16 @@ func NewHTTPServer(address string) (*HTTPServer, error) {
 
 func (s *HTTPServer) ListenAndServe(service artisanalinteger.Service) error {
 
-	handler := func(rsp http.ResponseWriter, req *http.Request) {
+	handler, err := http.IntegerHandler(service)
 
-		next, err := service.NextInt()
-
-		if err != nil {
-			http.Error(rsp, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		str_next := strconv.FormatInt(next, 10)
-
-		b := []byte(str_next)
-
-		rsp.Header().Set("Content-Type", "text/plain")
-		rsp.Header().Set("Content-Length", strconv.Itoa(len(b)))
-
-		rsp.Write(b)
+	if err != nil {
+		return err
 	}
 
 	log.Println("listening on", s.address)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", handler)
+	mux := gohttp.NewServeMux()
+	mux.Handle("/", handler)
 
-	err := http.ListenAndServe(s.address, mux)
-	return err
+	return gohttp.ListenAndServe(s.address, mux)
 }
