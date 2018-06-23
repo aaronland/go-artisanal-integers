@@ -24,9 +24,11 @@ Everything is in flux. This will be updated soon.
 
 ### Client
 
+```
 type Client interface {
 	NextInt() (int64, error)
 }
+```
 
 ### Engine
 
@@ -40,21 +42,26 @@ type Engine interface {
 	SetKey(string) error
 	SetOffset(int64) error
 	SetIncrement(int64) error
+	Close() error
 }
 ```
 
 ### Service
 
+```
 type Service interface {
 	NextInt() (int64, error)
 	LastInt() (int64, error)
 }
+```
 
 ### Server
 
+```
 type Server interface {
 	ListenAndServe(Service) error
 }
+```
 
 ## Tools
 
