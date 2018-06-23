@@ -5,6 +5,7 @@ self:   prep
 	if test -d src/github.com/aaronland/go-artisanal-integers; then rm -rf src/github.com/aaronland/go-artisanal-integers; fi
 	mkdir -p src/github.com/aaronland/go-artisanal-integers/
 	cp *.go src/github.com/aaronland/go-artisanal-integers/
+	cp -r application src/github.com/aaronland/go-artisanal-integers/
 	cp -r client src/github.com/aaronland/go-artisanal-integers/
 	cp -r engine src/github.com/aaronland/go-artisanal-integers/
 	cp -r http src/github.com/aaronland/go-artisanal-integers/
@@ -27,6 +28,7 @@ vendor-deps: rmdeps deps
 	rm -rf src
 fmt:
 	go fmt *.go
+	go fmt application/*.go
 	go fmt client/*.go
 	go fmt cmd/*.go
 	go fmt engine/*.go

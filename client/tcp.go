@@ -19,7 +19,7 @@ type TCPClient struct {
 func NewTCPClient(u *url.URL) (*TCPClient, error) {
 
 	cl := TCPClient{
-	   url: u,
+		url: u,
 	}
 
 	return &cl, nil
