@@ -5,30 +5,34 @@ import (
 	"github.com/aaronland/go-artisanal-integers/http"
 	"github.com/whosonfirst/algnhsa"
 	_ "log"
-	gohttp "net/http"
+	gourl "net/url"
 )
 
 type LambdaServer struct {
 	artisanalinteger.Server
+	url *gourl.URL
 }
 
-func NewLambdaServer() (*LambdaServer, error) {
+func NewLambdaServer(u *gourl.URL, args ...interface{}) (*LambdaServer, error) {
 
-	server := LambdaServer{}
+	server := LambdaServer{
+		url: u,
+	}
 
 	return &server, nil
 }
 
+func (s *LambdaServer) Address() string {
+	return s.url.String()
+}
+
 func (s *LambdaServer) ListenAndServe(service artisanalinteger.Service) error {
 
-	handler, err := http.IntegerHandler(service)
+	mux, err := http.NewServeMux(service, s.url)
 
 	if err != nil {
 		return err
 	}
-
-	mux := gohttp.NewServeMux()
-	mux.HandleFunc("/", handler)
 
 	algnhsa.ListenAndServe(mux, nil)
 	return nil

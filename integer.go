@@ -17,6 +17,7 @@ type Service interface {
 
 type Server interface {
 	ListenAndServe(Service) error
+	Address() string
 }
 
 type Client interface {

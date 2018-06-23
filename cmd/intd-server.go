@@ -7,6 +7,7 @@ import (
 	"github.com/aaronland/go-artisanal-integers/server"
 	"github.com/aaronland/go-artisanal-integers/service"
 	"log"
+	"net/url"
 	"os"
 )
 
@@ -15,6 +16,7 @@ func main() {
 	var proto = flag.String("protocol", "http", "The protocol for the server to implement. Valid options are: http,tcp.")
 	var host = flag.String("host", "localhost", "The hostname to listen for requests on")
 	var port = flag.Int("port", 8080, "The port number to listen for requests on")
+	var path = flag.String("path", "/", "The path to listen for requests on")
 
 	var dsn = flag.String("dsn", "", "The data source name (dsn) for connecting to the artisanal integer engine.")
 	var last = flag.Int("set-last-int", 0, "Set the last known integer.")
@@ -62,13 +64,25 @@ func main() {
 		log.Fatal(err)
 	}
 
-	address := fmt.Sprintf("%s:%d", *host, *port)
+	u := new(url.URL)
 
-	s, err := server.NewArtisanalServer(*proto, address)
+	u.Scheme = *proto
+	u.Host = fmt.Sprintf("%s:%d", *host, *port)
+	u.Path = *path
+
+	_, err = url.Parse(u.String())
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	s, err := server.NewArtisanalServer(*proto, u)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Listen on", s.Address())
 
 	err = s.ListenAndServe(svc)
 

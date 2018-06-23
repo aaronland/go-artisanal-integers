@@ -3,10 +3,12 @@ package server
 import (
 	"errors"
 	"github.com/aaronland/go-artisanal-integers"
+	_ "log"
+	"net/url"
 	"strings"
 )
 
-func NewArtisanalServer(proto string, address string) (artisanalinteger.Server, error) {
+func NewArtisanalServer(proto string, u *url.URL, args ...interface{}) (artisanalinteger.Server, error) {
 
 	var svr artisanalinteger.Server
 	var err error
@@ -15,19 +17,15 @@ func NewArtisanalServer(proto string, address string) (artisanalinteger.Server, 
 
 	case "HTTP":
 
-		if address == "" {
-			address = "localhost:8080"
-		}
-
-		svr, err = NewHTTPServer(address)
+		svr, err = NewHTTPServer(u, args...)
 
 	case "LAMBDA":
 
-		svr, err = NewLambdaServer()
+		svr, err = NewLambdaServer(u, args...)
 
 	case "TCP":
 
-		svr, err = NewTCPServer(address)
+		svr, err = NewTCPServer(u, args...)
 
 	default:
 		return nil, errors.New("Invalid server protocol")

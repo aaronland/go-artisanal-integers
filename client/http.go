@@ -5,18 +5,19 @@ import (
 	"io/ioutil"
 	_ "log"
 	"net/http"
+	"net/url"
 	"strconv"
 )
 
 type HTTPClient struct {
 	artisanalinteger.Client
-	address string
+	url *url.URL
 }
 
-func NewHTTPClient(address string) (*HTTPClient, error) {
+func NewHTTPClient(u *url.URL) (*HTTPClient, error) {
 
 	cl := HTTPClient{
-		address: address,
+		url: u,
 	}
 
 	return &cl, nil
@@ -24,7 +25,7 @@ func NewHTTPClient(address string) (*HTTPClient, error) {
 
 func (cl *HTTPClient) NextInt() (int64, error) {
 
-	rsp, err := http.Get("http://" + cl.address)
+	rsp, err := http.Get(cl.url.String())
 
 	if err != nil {
 		return -1, err

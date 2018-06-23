@@ -3,36 +3,38 @@ package server
 import (
 	"github.com/aaronland/go-artisanal-integers"
 	"github.com/aaronland/go-artisanal-integers/http"
-	"log"
+	_ "log"
 	gohttp "net/http"
+	gourl "net/url"
 )
 
 type HTTPServer struct {
 	artisanalinteger.Server
-	address string
+	url *gourl.URL
 }
 
-func NewHTTPServer(address string) (*HTTPServer, error) {
+func NewHTTPServer(u *gourl.URL, args ...interface{}) (*HTTPServer, error) {
+
+	u.Scheme = "http"
 
 	server := HTTPServer{
-		address: address,
+		url: u,
 	}
 
 	return &server, nil
 }
 
+func (s *HTTPServer) Address() string {
+	return s.url.String()
+}
+
 func (s *HTTPServer) ListenAndServe(service artisanalinteger.Service) error {
 
-	handler, err := http.IntegerHandler(service)
+	mux, err := http.NewServeMux(service, s.url)
 
 	if err != nil {
 		return err
 	}
 
-	log.Println("listening on", s.address)
-
-	mux := gohttp.NewServeMux()
-	mux.Handle("/", handler)
-
-	return gohttp.ListenAndServe(s.address, mux)
+	return gohttp.ListenAndServe(s.url.Host, mux)
 }

@@ -7,26 +7,31 @@ import (
 	"github.com/aaronland/go-artisanal-integers"
 	"log"
 	"net"
+	"net/url"
 	"strconv"
 )
 
 type TCPServer struct {
 	artisanalinteger.Server
-	address string
+	url *url.URL
 }
 
-func NewTCPServer(address string) (*TCPServer, error) {
+func NewTCPServer(u *url.URL, args ...interface{}) (*TCPServer, error) {
 
 	server := TCPServer{
-		address: address,
+		url: u,
 	}
 
 	return &server, nil
 }
 
+func (s *TCPServer) Address() string {
+	return s.url.Host
+}
+
 func (s *TCPServer) ListenAndServe(service artisanalinteger.Service) error {
 
-	listener, err := net.Listen("tcp", s.address)
+	listener, err := net.Listen("tcp", s.url.Host)
 
 	if err != nil {
 		return err
