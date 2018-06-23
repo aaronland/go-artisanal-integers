@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/facebookgo/grace/gracehttp"
 	"github.com/thisisaaronland/go-artisanal-integers"
 	"log"
 	"net/http"
@@ -48,6 +47,6 @@ func (s *HTTPServer) ListenAndServe(service artisanalinteger.Service) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler)
 
-	err := gracehttp.Serve(&http.Server{Addr: s.address, Handler: mux})
+	err := http.ListenAndServe(s.address, mux)
 	return err
 }

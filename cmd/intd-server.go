@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/thisisaaronland/go-artisanal-integers/engine"
 	"github.com/thisisaaronland/go-artisanal-integers/service"
 	"github.com/thisisaaronland/go-artisanal-integers/util"
 	"log"
@@ -15,7 +16,6 @@ func main() {
 	var host = flag.String("host", "localhost", "The hostname to listen for requests on")
 	var port = flag.Int("port", 8080, "The port number to listen for requests on")
 
-	var db = flag.String("engine", "", "The name of the artisanal integer engine to use.")
 	var dsn = flag.String("dsn", "", "The data source name (dsn) for connecting to the artisanal integer engine.")
 	var last = flag.Int("set-last-int", 0, "Set the last known integer.")
 	var offset = flag.Int("set-offset", 0, "Set the offset used to mint integers.")
@@ -23,7 +23,7 @@ func main() {
 
 	flag.Parse()
 
-	eng, err := util.NewArtisanalEngine(*db, *dsn)
+	eng, err := engine.NewMemoryEngine(*dsn)
 
 	if err != nil {
 		log.Fatal(err)

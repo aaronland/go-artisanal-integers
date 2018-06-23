@@ -9,28 +9,25 @@ self:   prep
 	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/service
 	mkdir -p src/github.com/thisisaaronland/go-artisanal-integers/util
 	cp *.go src/github.com/thisisaaronland/go-artisanal-integers/
-	cp client/*.go src/github.com/thisisaaronland/go-artisanal-integers/client/
-	cp engine/*.go src/github.com/thisisaaronland/go-artisanal-integers/engine/
-	cp server/*.go src/github.com/thisisaaronland/go-artisanal-integers/server/
-	cp service/*.go src/github.com/thisisaaronland/go-artisanal-integers/service/
-	cp util/*.go src/github.com/thisisaaronland/go-artisanal-integers/util/
-	cp -r vendor/src/* src/
+	cp -r client src/github.com/thisisaaronland/go-artisanal-integers/
+	cp -r engine src/github.com/thisisaaronland/go-artisanal-integers/
+	cp -r server src/github.com/thisisaaronland/go-artisanal-integers/
+	cp -r service src/github.com/thisisaaronland/go-artisanal-integers/
+	cp -r util src/github.com/thisisaaronland/go-artisanal-integers/
+	# if test -d vendor; then cp -r vendor/* src/; fi
 
 rmdeps:
 	if test -d src; then rm -rf src; fi 
 
 deps:
-	@GOPATH=$(shell pwd) go get "github.com/facebookgo/grace/gracehttp"
-	@GOPATH=$(shell pwd) go get "github.com/go-sql-driver/mysql"
-	@GOPATH=$(shell pwd) go get "github.com/garyburd/redigo/redis"
+	# @GOPATH=$(shell pwd) go get "github.com/facebookgo/grace/gracehttp"
 
 vendor-deps: rmdeps deps
-	if test ! -d vendor; then mkdir vendor; fi
-	if test -d vendor/src; then rm -rf vendor/src; fi
-	cp -r src vendor/src
+	if test ! -d src; then mkdir src; fi
+	if test -d vendor; then rm -rf vendor; fi
+	cp -r src vendor
 	find vendor -name '.git' -print -type d -exec rm -rf {} +
 	rm -rf src
-
 fmt:
 	go fmt *.go
 	go fmt client/*.go
