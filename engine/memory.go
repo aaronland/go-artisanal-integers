@@ -15,6 +15,23 @@ type MemoryEngine struct {
 	last      int64
 }
 
+func NewMemoryEngine(dsn string) (*MemoryEngine, error) {
+
+	mu := new(sync.Mutex)
+
+	eng := MemoryEngine{
+		key:       "integers",
+		increment: 2,
+		offset:    1,
+		mu:        mu,
+		last:      0,
+	}
+
+	// PLEASE WRITE ME: check to see if we should read a value persisted to disk
+
+	return &eng, nil
+}
+
 func (eng *MemoryEngine) SetLastInt(i int64) error {
 
 	eng.mu.Lock()
@@ -78,25 +95,12 @@ func (eng *MemoryEngine) LastInt() (int64, error) {
 	return eng.last, nil
 }
 
+func (eng *MemoryEngine) Close() error {
+	return nil
+}
+
 // PLEASE WRITE ME
 
 func (eng *MemoryEngine) persist(i int64) error {
 	return nil
-}
-
-func NewMemoryEngine(dsn string) (*MemoryEngine, error) {
-
-	mu := new(sync.Mutex)
-
-	eng := MemoryEngine{
-		key:       "integers",
-		increment: 2,
-		offset:    1,
-		mu:        mu,
-		last:      0,
-	}
-
-	// PLEASE WRITE ME: check to see if we should read a value persisted to disk
-
-	return &eng, nil
 }

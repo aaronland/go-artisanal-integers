@@ -7,6 +7,7 @@ type Engine interface {
 	SetKey(string) error
 	SetOffset(int64) error
 	SetIncrement(int64) error
+	Close() error
 }
 
 type Service interface {
