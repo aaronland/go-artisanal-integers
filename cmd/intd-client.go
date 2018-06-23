@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/thisisaaronland/go-artisanal-integers/util"
+	"github.com/aaronland/go-artisanal-integers/client"
 	"log"
 )
 
@@ -17,7 +17,7 @@ func main() {
 
 	address := fmt.Sprintf("%s:%d", *host, *port)
 
-	cl, err := util.NewArtisanalClient(*proto, address)
+	cl, err := client.NewArtisanalClient(*proto, address)
 
 	if err != nil {
 		log.Fatal(err)

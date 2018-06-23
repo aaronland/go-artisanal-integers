@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/thisisaaronland/go-artisanal-integers"
+	"github.com/aaronland/go-artisanal-integers"
 	"io/ioutil"
 	"net/http"
 	"strconv"

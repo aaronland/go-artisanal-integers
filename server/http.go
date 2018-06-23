@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/thisisaaronland/go-artisanal-integers"
+	"github.com/aaronland/go-artisanal-integers"
 	"log"
 	"net/http"
 	"strconv"

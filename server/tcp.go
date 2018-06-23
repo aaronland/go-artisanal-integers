@@ -4,7 +4,7 @@ package server
 
 import (
 	"bufio"
-	"github.com/thisisaaronland/go-artisanal-integers"
+	"github.com/aaronland/go-artisanal-integers"
 	"log"
 	"net"
 	"strconv"

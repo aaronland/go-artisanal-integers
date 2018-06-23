@@ -2,7 +2,7 @@ package engine
 
 import (
 	"errors"
-	"github.com/thisisaaronland/go-artisanal-integers"
+	"github.com/aaronland/go-artisanal-integers"
 	"sync"
 )
 

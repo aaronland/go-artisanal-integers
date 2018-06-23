@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
-	"github.com/thisisaaronland/go-artisanal-integers/engine"
+	"github.com/aaronland/go-artisanal-integers/engine"
 	"io"
 	"log"
 	"os"

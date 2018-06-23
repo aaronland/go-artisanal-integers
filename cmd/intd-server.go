@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/thisisaaronland/go-artisanal-integers/engine"
-	"github.com/thisisaaronland/go-artisanal-integers/service"
-	"github.com/thisisaaronland/go-artisanal-integers/util"
+	"github.com/aaronland/go-artisanal-integers/engine"
+	"github.com/aaronland/go-artisanal-integers/server"
+	"github.com/aaronland/go-artisanal-integers/service"
 	"log"
 	"os"
 )
@@ -56,7 +56,7 @@ func main() {
 		}
 	}
 
-	svc, err := service.NewExampleService(eng)
+	svc, err := service.NewArtisanalService("simple", eng)
 
 	if err != nil {
 		log.Fatal(err)
@@ -64,7 +64,7 @@ func main() {
 
 	address := fmt.Sprintf("%s:%d", *host, *port)
 
-	s, err := util.NewArtisanalServer(*proto, address)
+	s, err := server.NewArtisanalServer(*proto, address)
 
 	if err != nil {
 		log.Fatal(err)
