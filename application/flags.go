@@ -46,12 +46,12 @@ func ParseFlags(fs *flag.FlagSet) {
 
 		env = strings.ToUpper(env)
 		env = strings.Replace(env, "-", "_", -1)
-		env = fmt.Sprintf("INTEGER_%s", env)
+		env = fmt.Sprintf("ARTISANAL_%s", env)
 
 		val, ok := os.LookupEnv(env)
 
 		if ok {
-			log.Printf("set -%s flag (%s) from %s environment variable\n", name, val, env)
+			log.Printf("set -%s flag from %s environment variable\n", name, env)
 			fs.Set(name, val)
 		}
 	})
