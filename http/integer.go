@@ -18,11 +18,11 @@ func IntegerHandler(service artisanalinteger.Service) (gohttp.HandlerFunc, error
 		}
 
 		str_next := strconv.FormatInt(next, 10)
-
 		b := []byte(str_next)
 
 		rsp.Header().Set("Content-Type", "text/plain")
 		rsp.Header().Set("Content-Length", strconv.Itoa(len(b)))
+		rsp.Header().Set("Access-Control-Allow-Origin", "*")
 
 		rsp.Write(b)
 	}
