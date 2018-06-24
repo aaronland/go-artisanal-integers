@@ -10,20 +10,30 @@ import (
 
 func NewServeMux(s artisanalinteger.Service, u *gourl.URL) (*gohttp.ServeMux, error) {
 
-	handler, err := IntegerHandler(s)
+	integer_handler, err := IntegerHandler(s)
 
 	if err != nil {
 		return nil, err
 	}
 
-	path := u.Path
+	integer_path := u.Path
 
-	if !strings.HasPrefix(path, "/") {
-		path = fmt.Sprintf("/%s", path)
+	if !strings.HasPrefix(integer_path, "/") {
+		integer_path = fmt.Sprintf("/%s", integer_path)
 	}
 
+	ping_handler, err := PingHandler()
+
+	if err != nil {
+		return nil, err
+	}
+
+	ping_path := "/ping"
+
 	mux := gohttp.NewServeMux()
-	mux.Handle(path, handler)
+
+	mux.Handle(integer_path, integer_handler)
+	mux.Handle(ping_path, ping_handler)
 
 	return mux, nil
 }
