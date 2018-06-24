@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"github.com/aaronland/go-artisanal-integers/application"
 	"github.com/aaronland/go-artisanal-integers/engine"
 	"log"
@@ -10,17 +9,30 @@ import (
 
 func main() {
 
-	var dsn = flag.String("dsn", "", "The data source name (dsn) for connecting to the artisanal integer engine.")
+	flags := application.NewServerApplicationFlags()
 
-	flag.Parse()
+	/*
+		var dsn string
+		flags.StringVar(&dsn, "dsn", "example", "The data source name (dsn) for connecting to the artisanal integer engine.")
 
-	eng, err := engine.NewMemoryEngine(*dsn)
+		application.ParseFlags(flags)
+
+		eng, err := engine.NewMemoryEngine(dsn)
+	*/
+
+	eng, err := engine.NewMemoryEngine("")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = application.ServerApplication(eng)
+	app, err := application.NewServerApplication(eng)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = app.Run(flags)
 
 	if err != nil {
 		log.Fatal(err)

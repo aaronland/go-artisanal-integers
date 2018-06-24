@@ -8,68 +8,78 @@ import (
 	"github.com/aaronland/go-artisanal-integers/service"
 	"log"
 	"net/url"
-	"os"
-	"strings"
 )
 
-func ServerApplication(eng artisanalinteger.Engine) error {
+func NewServerApplicationFlags() *flag.FlagSet {
 
-	var proto = flag.String("protocol", "http", "The protocol for the server to implement. Valid options are: http,tcp.")
-	var host = flag.String("host", "localhost", "The hostname to listen for requests on")
-	var port = flag.Int("port", 8080, "The port number to listen for requests on")
-	var path = flag.String("path", "/", "The path to listen for requests on")
+	fs := NewFlagSet("server")
 
-	var last = flag.Int("set-last-int", 0, "Set the last known integer.")
-	var offset = flag.Int("set-offset", 0, "Set the offset used to mint integers.")
-	var increment = flag.Int("set-increment", 0, "Set the increment used to mint integers.")
+	AssignCommonFlags(fs)
 
-	flag.Parse()
+	fs.Int("set-last-int", 0, "Set the last known integer.")
+	fs.Int("set-offset", 0, "Set the offset used to mint integers.")
+	fs.Int("set-increment", 0, "Set the increment used to mint integers.")
 
-	flag.VisitAll(func(fl *flag.Flag) {
+	return fs
+}
 
-		name := fl.Name
-		env := name
+type ServerApplication struct {
+	Application
+	engine artisanalinteger.Engine
+}
 
-		env = strings.ToUpper(env)
-		env = strings.Replace(env, "-", "_", -1)
-		env = fmt.Sprintf("INTEGER_%s", env)
+func NewServerApplication(eng artisanalinteger.Engine) (Application, error) {
 
-		val, ok := os.LookupEnv(env)
+	a := ServerApplication{
+		engine: eng,
+	}
 
-		if ok {
-			log.Printf("set -%s flag (%s) from %s environment variable\n", name, val, env)
-			flag.Set(name, val)
-		}
-	})
+	return &a, nil
+}
 
-	if *last != 0 {
+func (s *ServerApplication) Run(fl *flag.FlagSet) error {
 
-		err := eng.SetLastInt(int64(*last))
+	if !fl.Parsed() {
+		ParseFlags(fl)
+	}
+
+	proto, _ := StringVar(fl, "protocol")
+	host, _ := StringVar(fl, "host")
+	port, _ := IntVar(fl, "port")
+	path, _ := StringVar(fl, "path")
+
+	last, _ := IntVar(fl, "set-last-int")
+	offset, _ := IntVar(fl, "set-last-offset")
+	increment, _ := IntVar(fl, "set-last-increment")
+
+	if last != 0 {
+
+		err := s.engine.SetLastInt(int64(last))
 
 		if err != nil {
 			return err
 		}
 	}
 
-	if *increment != 0 {
+	if increment != 0 {
 
-		err := eng.SetIncrement(int64(*increment))
-
-		if err != nil {
-			return err
-		}
-	}
-
-	if *offset != 0 {
-
-		err := eng.SetOffset(int64(*offset))
+		err := s.engine.SetIncrement(int64(increment))
 
 		if err != nil {
 			return err
 		}
 	}
 
-	svc, err := service.NewArtisanalService("simple", eng)
+	if offset != 0 {
+
+		err := s.engine.SetOffset(int64(offset))
+
+		if err != nil {
+			return err
+		}
+	}
+
+	svc, err := service.NewArtisanalService("simple", s.engine)
 
 	if err != nil {
 		return err
@@ -77,9 +87,9 @@ func ServerApplication(eng artisanalinteger.Engine) error {
 
 	u := new(url.URL)
 
-	u.Scheme = *proto
-	u.Host = fmt.Sprintf("%s:%d", *host, *port)
-	u.Path = *path
+	u.Scheme = proto
+	u.Host = fmt.Sprintf("%s:%d", host, port)
+	u.Path = path
 
 	_, err = url.Parse(u.String())
 
@@ -87,13 +97,13 @@ func ServerApplication(eng artisanalinteger.Engine) error {
 		return err
 	}
 
-	s, err := server.NewArtisanalServer(*proto, u)
+	svr, err := server.NewArtisanalServer(proto, u)
 
 	if err != nil {
 		return err
 	}
 
-	log.Println("Listen on", s.Address())
+	log.Println("Listen on", svr.Address())
 
-	return s.ListenAndServe(svc)
+	return svr.ListenAndServe(svc)
 }
