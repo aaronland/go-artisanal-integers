@@ -22,5 +22,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	os.Exit(0)	
+	os.Exit(0)
 }

@@ -18,13 +18,13 @@ func NewClientApplicationFlags() *flag.FlagSet {
 }
 
 type ClientApplication struct {
-     Application
+	Application
 }
 
 func NewClientApplication() (Application, error) {
 
-     c := ClientApplication{}
-     return &c, nil
+	c := ClientApplication{}
+	return &c, nil
 }
 
 func (c *ClientApplication) Run(fl *flag.FlagSet) error {
@@ -63,5 +63,5 @@ func (c *ClientApplication) Run(fl *flag.FlagSet) error {
 	}
 
 	log.Println(i)
-	return nil	
+	return nil
 }

@@ -42,6 +42,3 @@ bin:    self
 	@GOPATH=$(shell pwd) go build -o bin/int cmd/int.go
 	@GOPATH=$(shell pwd) go build -o bin/intd-client cmd/intd-client.go
 	@GOPATH=$(shell pwd) go build -o bin/intd-server cmd/intd-server.go
-
-docker-build:
-	docker build -t intd-server .
