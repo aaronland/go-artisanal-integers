@@ -1,7 +1,7 @@
 package main
 
 import (
-       "errors"
+	"errors"
 	"github.com/aaronland/go-artisanal-integers"
 	"github.com/aaronland/go-artisanal-integers/application"
 	"github.com/aaronland/go-artisanal-integers/engine"
