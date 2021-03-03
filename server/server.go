@@ -1,35 +1,82 @@
 package server
 
 import (
-	"errors"
-	"github.com/aaronland/go-artisanal-integers"
+	"context"
+	aa_server "github.com/aaronland/go-http-server"
 	_ "log"
-	"net/url"
-	"strings"
+	gohttp "net/http"
+	gourl "net/url"
 )
 
-func NewArtisanalServer(proto string, u *url.URL, args ...interface{}) (artisanalinteger.Server, error) {
+type ArtisanalServer struct {
+	aa_server Server
+	url       *gourl.URL
+}
 
-	var svr artisanalinteger.Server
-	var err error
+func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, error) {
 
-	switch strings.ToUpper(proto) {
-
-	case "HTTP":
-
-		svr, err = NewHTTPServer(u, args...)
-
-	case "TCP":
-
-		svr, err = NewTCPServer(u, args...)
-
-	default:
-		return nil, errors.New("Invalid server protocol")
-	}
+	u := url.Parse(uri)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return svr, nil
+	q := u.Query()
+
+	service_uri := q.Get("service")
+
+	if service_uri == "" {
+		return nil, errors.New("Missing ?service= parameter")
+	}
+
+	svc, err := service.NewService(ctx, service_uri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	aa_svr, err := aa_server.NewServer(ctx, uri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	svr := &ArtisanalServer{
+		server:  aa_svr,
+		service: svc,
+	}
+
+	return &svr, nil
+}
+
+func (svr *ArtisanalServer) Address() string {
+	return svr.server.Address()
+}
+
+func (svr *ArtisanalServer) ListenAndServe(ctx context.Context, mux *http.ServeMux) error {
+
+	integer_handler, err := http.IntegerHandler(s)
+
+	if err != nil {
+		return nil, err
+	}
+
+	integer_path := u.Path
+
+	if !strings.HasPrefix(integer_path, "/") {
+		integer_path = fmt.Sprintf("/%s", integer_path)
+	}
+
+	ping_handler, err := http.PingHandler()
+
+	if err != nil {
+		return nil, err
+	}
+
+	ping_path := "/ping"
+
+	mux.Handle(integer_path, integer_handler)
+	mux.Handle(ping_path, ping_handler)
+
+	return svr.server.ListenAndServe(ctx, mux)
 }

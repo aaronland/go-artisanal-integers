@@ -1,31 +1,41 @@
 package engine
 
 import (
+	"context"
 	"errors"
-	"github.com/aaronland/go-artisanal-integers"
 	"sync"
 )
 
 type ExampleEngine struct {
-	artisanalinteger.Engine
+	Engine
 	key       string
 	increment int64
 	offset    int64
 	mu        *sync.Mutex
 }
 
-func NewExampleEngine(dsn string) (*ExampleEngine, error) {
+func init() {
+
+	ctx := context.Background()
+	err := RegisterEngine(ctx, "example", NewExampleEngine)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func NewExampleEngine(ctx context.Context, uri string) (Engine, error) {
 
 	mu := new(sync.Mutex)
 
-	eng := ExampleEngine{
+	eng := &ExampleEngine{
 		key:       "integers",
 		increment: 2,
 		offset:    1,
 		mu:        mu,
 	}
 
-	return &eng, nil
+	return eng, nil
 }
 
 func (eng *ExampleEngine) SetLastInt(i int64) error {

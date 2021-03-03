@@ -1,8 +1,8 @@
 package client
 
 import (
-	"github.com/aaronland/go-artisanal-integers"
-	"io/ioutil"
+	"context"
+	"io"
 	_ "log"
 	"net/http"
 	"net/url"
@@ -10,17 +10,42 @@ import (
 )
 
 type HTTPClient struct {
-	artisanalinteger.Client
+	Client
 	url *url.URL
 }
 
-func NewHTTPClient(u *url.URL) (*HTTPClient, error) {
+func init() {
 
-	cl := HTTPClient{
+	ctx := context.Background()
+
+	schemes := []string{
+		"http",
+		"https",
+	}
+
+	for _, prefix := range schemes {
+
+		err := RegisterClient(ctx, prefix, NewHTTPClient)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func NewHTTPClient(ctx context.Context, uri string) (Client, error) {
+
+	u, err := url.Parse(uri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	cl := &HTTPClient{
 		url: u,
 	}
 
-	return &cl, nil
+	return cl, nil
 }
 
 func (cl *HTTPClient) NextInt() (int64, error) {
@@ -33,7 +58,7 @@ func (cl *HTTPClient) NextInt() (int64, error) {
 
 	defer rsp.Body.Close()
 
-	byte_i, err := ioutil.ReadAll(rsp.Body)
+	byte_i, err := io.ReadAll(rsp.Body)
 
 	if err != nil {
 		return -1, err

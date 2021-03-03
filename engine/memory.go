@@ -1,13 +1,13 @@
 package engine
 
 import (
+	"context"
 	"errors"
-	"github.com/aaronland/go-artisanal-integers"
 	"sync"
 )
 
 type MemoryEngine struct {
-	artisanalinteger.Engine
+	Engine
 	key       string
 	increment int64
 	offset    int64
@@ -15,11 +15,21 @@ type MemoryEngine struct {
 	last      int64
 }
 
-func NewMemoryEngine(dsn string) (*MemoryEngine, error) {
+func init() {
+
+	ctx := context.Background()
+	err := RegisterEngine(ctx, "memory", NewMemoryEngine)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func NewMemoryEngine(ctx context.Context, uri string) (Engine, error) {
 
 	mu := new(sync.Mutex)
 
-	eng := MemoryEngine{
+	eng := &MemoryEngine{
 		key:       "integers",
 		increment: 2,
 		offset:    1,
@@ -29,7 +39,7 @@ func NewMemoryEngine(dsn string) (*MemoryEngine, error) {
 
 	// PLEASE WRITE ME: check to see if we should read a value persisted to disk
 
-	return &eng, nil
+	return eng, nil
 }
 
 func (eng *MemoryEngine) SetLastInt(i int64) error {

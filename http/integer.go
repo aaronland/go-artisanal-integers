@@ -1,16 +1,16 @@
 package http
 
 import (
-	"github.com/aaronland/go-artisanal-integers"
+	"github.com/aaronland/go-artisanal-integers/service"
 	gohttp "net/http"
 	"strconv"
 )
 
-func IntegerHandler(service artisanalinteger.Service) (gohttp.HandlerFunc, error) {
+func IntegerHandler(svc service.Service) (gohttp.HandlerFunc, error) {
 
 	fn := func(rsp gohttp.ResponseWriter, req *gohttp.Request) {
 
-		next, err := service.NextInt()
+		next, err := svc.NextInt()
 
 		if err != nil {
 			gohttp.Error(rsp, err.Error(), gohttp.StatusBadRequest)

@@ -2,13 +2,13 @@ package http
 
 import (
 	"fmt"
-	"github.com/aaronland/go-artisanal-integers"
+	"github.com/aaronland/go-artisanal-integers/service"
 	gohttp "net/http"
-	gourl "net/url"
+	"net/url"
 	"strings"
 )
 
-func NewServeMux(s artisanalinteger.Service, u *gourl.URL) (*gohttp.ServeMux, error) {
+func NewServeMux(s service.Service, u *url.URL) (*gohttp.ServeMux, error) {
 
 	integer_handler, err := IntegerHandler(s)
 

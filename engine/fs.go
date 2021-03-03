@@ -1,10 +1,11 @@
 package engine
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"github.com/aaronland/go-artisanal-integers"
-	"io/ioutil"
+	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -12,16 +13,33 @@ import (
 )
 
 type FSEngine struct {
-	artisanalinteger.Engine
+	Engine
 	key       string
 	offset    int64
 	increment int64
 	mu        *sync.Mutex
 }
 
-func NewFSEngine(dsn string) (*FSEngine, error) {
+func init() {
 
-	abs_path, err := filepath.Abs(dsn)
+	ctx := context.Background()
+	err := RegisterEngine(ctx, "fs", NewFSEngine)
+
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func NewFSEngine(ctx context.Context, uri string) (Engine, error) {
+
+	u, err := url.Parse(uri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	abs_path, err := filepath.Abs(u.Path)
 
 	if err != nil {
 		return nil, err
@@ -140,7 +158,7 @@ func read_int(path string) (int64, error) {
 
 	defer fh.Close()
 
-	b, err := ioutil.ReadAll(fh)
+	b, err := io.ReadAll(fh)
 
 	if err != nil {
 		return -1, err

@@ -1,22 +1,55 @@
 package service
 
 import (
-	"github.com/aaronland/go-artisanal-integers"
+	"context"
+	"errors"
+	"github.com/aaronland/go-artisanal-integers/engine"
 	"github.com/aaronland/go-artisanal-integers/utils"
+	"net/url"
 )
 
 type SimpleService struct {
-	artisanalinteger.Service
-	engine artisanalinteger.Engine
+	Service
+	engine engine.Engine
 }
 
-func NewSimpleService(eng artisanalinteger.Engine) (*SimpleService, error) {
+func init() {
 
-	svc := SimpleService{
+	ctx := context.Background()
+	err := RegisterService(ctx, "simple", NewSimpleService)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func NewSimpleService(ctx context.Context, uri string) (Service, error) {
+
+	u, err := url.Parse(uri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := u.Query()
+
+	engine_uri := q.Get("engine")
+
+	if engine_uri == "" {
+		return nil, errors.New("Missing ?engine= parameter")
+	}
+
+	eng, err := engine.NewEngine(ctx, engine_uri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	svc := &SimpleService{
 		engine: eng,
 	}
 
-	return &svc, nil
+	return svc, nil
 }
 
 func (svc *SimpleService) NextInt() (int64, error) {
