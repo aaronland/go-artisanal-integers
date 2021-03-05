@@ -1,5 +1,7 @@
 package application
 
+// REPLACE WITH sfomuseum/go-flags
+
 import (
 	"errors"
 	"flag"
@@ -22,10 +24,6 @@ func NewFlagSet(name string) *flag.FlagSet {
 
 func AssignCommonFlags(fs *flag.FlagSet) {
 
-	fs.String("protocol", "http", "The protocol for the server to implement. Valid options are: http,tcp.")
-	fs.String("host", "localhost", "The hostname to listen for requests on")
-	fs.Int("port", 8080, "The port number to listen for requests on")
-	fs.String("path", "/", "The path to listen for requests on")
 }
 
 func ParseFlags(fs *flag.FlagSet) {

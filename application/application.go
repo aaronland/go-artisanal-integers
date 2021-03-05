@@ -1,9 +1,10 @@
 package application
 
 import (
+	"context"
 	"flag"
 )
 
 type Application interface {
-	Run(*flag.FlagSet) error
+	Run(context.Context, *flag.FlagSet) error
 }

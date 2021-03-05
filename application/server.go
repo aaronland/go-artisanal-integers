@@ -1,12 +1,15 @@
 package application
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"github.com/aaronland/go-artisanal-integers"
-	"github.com/aaronland/go-artisanal-integers/server"
+	"github.com/aaronland/go-artisanal-integers/engine"
+	"github.com/aaronland/go-artisanal-integers/http"
 	"github.com/aaronland/go-artisanal-integers/service"
+	"github.com/aaronland/go-http-server"
 	"log"
+	gohttp "net/http"
 	"net/url"
 )
 
@@ -25,32 +28,46 @@ func NewServerApplicationFlags() *flag.FlagSet {
 
 type ServerApplication struct {
 	Application
-	engine artisanalinteger.Engine
 }
 
-func NewServerApplication(eng artisanalinteger.Engine) (Application, error) {
+func NewServerApplication(ctx context.Context, uri string) (Application, error) {
 
-	a := ServerApplication{
-		engine: eng,
-	}
+	a := &ServerApplication{}
 
-	return &a, nil
+	return a, nil
 }
 
-func (s *ServerApplication) Run(fl *flag.FlagSet) error {
+func (s *ServerApplication) Run(ctx context.Context, fl *flag.FlagSet) error {
 
 	if !fl.Parsed() {
 		ParseFlags(fl)
 	}
 
-	proto, _ := StringVar(fl, "protocol")
-	host, _ := StringVar(fl, "host")
-	port, _ := IntVar(fl, "port")
-	path, _ := StringVar(fl, "path")
-
 	last, _ := IntVar(fl, "set-last-int")
 	offset, _ := IntVar(fl, "set-last-offset")
 	increment, _ := IntVar(fl, "set-last-increment")
+
+	service_uri := "simple://"
+	engine_uri := "memory://"
+
+	server_uri := "http://localhost:8080"
+
+	svc_uri := url.Parse(service_uri)
+
+	if err != nil {
+		return nil
+	}
+
+	svc_params := url.Values{}
+	svc_params.Set("engine", engine_uri)
+
+	svc_uri.RawQuery = svc_params.Encode()
+
+	svc, err := service.NewService(ctx, svc_uri.String())
+
+	if err != nil {
+		return err
+	}
 
 	if last != 0 {
 
@@ -79,29 +96,40 @@ func (s *ServerApplication) Run(fl *flag.FlagSet) error {
 		}
 	}
 
-	svc, err := service.NewArtisanalService("simple", s.engine)
+	//
+
+	svr, err := server.NewServer(ctx, server_uri)
 
 	if err != nil {
 		return err
 	}
 
-	u := new(url.URL)
+	mux := gohttp.NewServeMux()
 
-	u.Scheme = proto
-	u.Host = fmt.Sprintf("%s:%d", host, port)
-	u.Path = path
+	//
 
-	_, err = url.Parse(u.String())
+	integer_handler, err := http.IntegerHandler(svc)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	svr, err := server.NewArtisanalServer(proto, u)
+	integer_path := u.Path
+
+	if !strings.HasPrefix(integer_path, "/") {
+		integer_path = fmt.Sprintf("/%s", integer_path)
+	}
+
+	ping_handler, err := http.PingHandler()
 
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	ping_path := "/ping"
+
+	mux.Handle(integer_path, integer_handler)
+	mux.Handle(ping_path, ping_handler)
 
 	log.Println("Listen on", svr.Address())
 
