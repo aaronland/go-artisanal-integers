@@ -36,7 +36,7 @@ func (c *ClientApplication) Run(ctx context.Context, fl *flag.FlagSet) error {
 
 	client_uri := "http://localhost:8080"
 
-	cl, err := client.NewArtisanalClient(ctx, client_uri)
+	cl, err := client.NewClient(ctx, client_uri)
 
 	if err != nil {
 		return err

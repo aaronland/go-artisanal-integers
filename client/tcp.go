@@ -4,7 +4,6 @@ package client
 
 import (
 	"bufio"
-	"github.com/aaronland/go-artisanal-integers"
 	"net"
 	"net/url"
 	"strconv"
@@ -12,7 +11,7 @@ import (
 )
 
 type TCPClient struct {
-	artisanalinteger.Client
+	Client
 	url *url.URL
 }
 

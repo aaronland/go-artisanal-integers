@@ -52,7 +52,7 @@ func (s *ServerApplication) Run(ctx context.Context, fl *flag.FlagSet) error {
 
 	server_uri := "http://localhost:8080"
 
-	svc_uri := url.Parse(service_uri)
+	svc_uri, err := url.Parse(service_uri)
 
 	if err != nil {
 		return nil

@@ -3,6 +3,7 @@ package http
 import (
 	"fmt"
 	"github.com/aaronland/go-artisanal-integers/service"
+	"github.com/aaronland/go-http-ping/v2"
 	gohttp "net/http"
 	"net/url"
 	"strings"
@@ -22,7 +23,7 @@ func NewServeMux(s service.Service, u *url.URL) (*gohttp.ServeMux, error) {
 		integer_path = fmt.Sprintf("/%s", integer_path)
 	}
 
-	ping_handler, err := PingHandler()
+	ping_handler, err := ping.PingPongHandler()
 
 	if err != nil {
 		return nil, err

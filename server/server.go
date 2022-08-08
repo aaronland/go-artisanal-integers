@@ -2,23 +2,28 @@ package server
 
 import (
 	"context"
+	"fmt"
+	aa_http "github.com/aaronland/go-artisanal-integers/http"
+	"github.com/aaronland/go-artisanal-integers/service"
 	aa_server "github.com/aaronland/go-http-server"
 	_ "log"
-	gohttp "net/http"
-	gourl "net/url"
+	"net/http"
+	"net/url"
+	"strings"
 )
 
 type ArtisanalServer struct {
-	aa_server Server
-	url       *gourl.URL
+	server  aa_server.Server
+	service service.Service
+	url     *url.URL
 }
 
 func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, error) {
 
-	u := url.Parse(uri)
+	u, err := url.Parse(uri)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to parse URL, %w", err)
 	}
 
 	q := u.Query()
@@ -26,7 +31,7 @@ func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, erro
 	service_uri := q.Get("service")
 
 	if service_uri == "" {
-		return nil, errors.New("Missing ?service= parameter")
+		return nil, fmt.Errorf("Missing ?service= parameter")
 	}
 
 	svc, err := service.NewService(ctx, service_uri)
@@ -44,39 +49,31 @@ func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, erro
 	svr := &ArtisanalServer{
 		server:  aa_svr,
 		service: svc,
+		url:     u,
 	}
 
-	return &svr, nil
+	return svr, nil
 }
 
 func (svr *ArtisanalServer) Address() string {
 	return svr.server.Address()
 }
 
-func (svr *ArtisanalServer) ListenAndServe(ctx context.Context, mux *http.ServeMux) error {
+func (svr *ArtisanalServer) ListenAndServe(ctx context.Context, mux http.Handler) error {
 
-	integer_handler, err := http.IntegerHandler(s)
+	integer_handler, err := aa_http.IntegerHandler(svr.service)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	integer_path := u.Path
+	integer_path := svr.url.Path
 
 	if !strings.HasPrefix(integer_path, "/") {
 		integer_path = fmt.Sprintf("/%s", integer_path)
 	}
 
-	ping_handler, err := http.PingHandler()
-
-	if err != nil {
-		return nil, err
-	}
-
-	ping_path := "/ping"
-
 	mux.Handle(integer_path, integer_handler)
-	mux.Handle(ping_path, ping_handler)
 
 	return svr.server.ListenAndServe(ctx, mux)
 }
