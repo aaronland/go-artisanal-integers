@@ -2,16 +2,14 @@ package engine
 
 import (
 	"context"
-	"errors"
-	"sync"
+	"fmt"
+	"sync/atomic"
 )
 
 type MemoryEngine struct {
 	Engine
-	key       string
 	increment int64
 	offset    int64
-	mu        *sync.Mutex
 	last      int64
 }
 
@@ -27,13 +25,9 @@ func init() {
 
 func NewMemoryEngine(ctx context.Context, uri string) (Engine, error) {
 
-	mu := new(sync.Mutex)
-
 	eng := &MemoryEngine{
-		key:       "integers",
 		increment: 2,
 		offset:    1,
-		mu:        mu,
 		last:      0,
 	}
 
@@ -44,20 +38,17 @@ func NewMemoryEngine(ctx context.Context, uri string) (Engine, error) {
 
 func (eng *MemoryEngine) SetLastInt(i int64) error {
 
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
-
 	last, err := eng.LastInt()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to retrieve last int, %w", err)
 	}
 
 	if last > i {
-		return errors.New("integer is too small")
+		return fmt.Errorf("%s is smaller than current last int", i)
 	}
 
-	eng.last = i
+	atomic.StoreInt64(&eng.last, i)
 	return nil
 }
 
@@ -66,43 +57,23 @@ func (eng *MemoryEngine) SetKey(k string) error {
 }
 
 func (eng *MemoryEngine) SetOffset(i int64) error {
-
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
-
-	eng.offset = i
+	atomic.StoreInt64(&eng.offset, i)
 	return nil
 }
 
 func (eng *MemoryEngine) SetIncrement(i int64) error {
-
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
-
-	eng.increment = i
+	atomic.StoreInt64(&eng.increment, i)
 	return nil
 }
 
 func (eng *MemoryEngine) NextInt() (int64, error) {
-
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
-
-	last := eng.last
-	next := last + (eng.increment * eng.offset)
-
-	eng.last = next
-
-	go eng.persist(eng.last)
+	next := atomic.AddInt64(&eng.last, eng.increment*eng.offset)
 	return next, nil
 }
 
 func (eng *MemoryEngine) LastInt() (int64, error) {
-
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
-
-	return eng.last, nil
+	last := atomic.LoadInt64(&eng.last)
+	return last, nil
 }
 
 func (eng *MemoryEngine) Close() error {
@@ -112,5 +83,5 @@ func (eng *MemoryEngine) Close() error {
 // PLEASE WRITE ME
 
 func (eng *MemoryEngine) persist(i int64) error {
-	return nil
+	return fmt.Errorf("Not implemented.")
 }
