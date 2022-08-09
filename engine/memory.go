@@ -45,7 +45,7 @@ func (eng *MemoryEngine) SetLastInt(i int64) error {
 	}
 
 	if last > i {
-		return fmt.Errorf("%s is smaller than current last int", i)
+		return fmt.Errorf("%d is smaller than current last int", i)
 	}
 
 	atomic.StoreInt64(&eng.last, i)
