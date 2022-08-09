@@ -13,7 +13,7 @@ import (
 
 func main() {
 
-	var engine_uri = flag.String("engine-uri", "memory", "The data source name (dsn) for connecting to the artisanal integer engine.")
+	var engine_uri = flag.String("engine-uri", "memory://", "The data source name (dsn) for connecting to the artisanal integer engine.")
 
 	var last = flag.Int("set-last-int", 0, "Set the last known integer.")
 	var offset = flag.Int("set-offset", 0, "Set the offset used to mint integers.")
