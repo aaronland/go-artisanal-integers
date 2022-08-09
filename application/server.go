@@ -3,8 +3,6 @@ package application
 import (
 	"context"
 	"flag"
-	"fmt"
-	"github.com/aaronland/go-artisanal-integers/engine"
 	"github.com/aaronland/go-artisanal-integers/http"
 	"github.com/aaronland/go-artisanal-integers/service"
 	"github.com/aaronland/go-http-server"
@@ -71,7 +69,7 @@ func (s *ServerApplication) Run(ctx context.Context, fl *flag.FlagSet) error {
 
 	if last != 0 {
 
-		err := s.engine.SetLastInt(int64(last))
+		err := svc.SetLastInt(int64(last))
 
 		if err != nil {
 			return err
@@ -80,7 +78,7 @@ func (s *ServerApplication) Run(ctx context.Context, fl *flag.FlagSet) error {
 
 	if increment != 0 {
 
-		err := s.engine.SetIncrement(int64(increment))
+		err := svc.SetIncrement(int64(increment))
 
 		if err != nil {
 			return err
@@ -89,7 +87,7 @@ func (s *ServerApplication) Run(ctx context.Context, fl *flag.FlagSet) error {
 
 	if offset != 0 {
 
-		err := s.engine.SetOffset(int64(offset))
+		err := svc.SetOffset(int64(offset))
 
 		if err != nil {
 			return err
@@ -111,27 +109,14 @@ func (s *ServerApplication) Run(ctx context.Context, fl *flag.FlagSet) error {
 	integer_handler, err := http.IntegerHandler(svc)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	integer_path := u.Path
-
-	if !strings.HasPrefix(integer_path, "/") {
-		integer_path = fmt.Sprintf("/%s", integer_path)
-	}
-
-	ping_handler, err := http.PingHandler()
-
-	if err != nil {
-		return nil, err
-	}
-
-	ping_path := "/ping"
+	integer_path := "/"
 
 	mux.Handle(integer_path, integer_handler)
-	mux.Handle(ping_path, ping_handler)
 
 	log.Println("Listen on", svr.Address())
 
-	return svr.ListenAndServe(svc)
+	return svr.ListenAndServe(ctx, mux)
 }

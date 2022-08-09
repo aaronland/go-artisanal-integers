@@ -12,10 +12,10 @@ import (
 type Service interface {
 	NextInt() (int64, error)
 	LastInt() (int64, error)
-	// SetLastInt(int64) error
+	SetLastInt(int64) error
 	//SetKey(string) error
-	// SetOffset(int64) error
-	//SetIncrement(int64) error
+	SetOffset(int64) error
+	SetIncrement(int64) error
 }
 
 type ServiceInitializeFunc func(ctx context.Context, uri string) (Service, error)

@@ -3,10 +3,8 @@ package application
 import (
 	"context"
 	"flag"
-	"fmt"
 	"github.com/aaronland/go-artisanal-integers/client"
 	"log"
-	"net/url"
 )
 
 func NewClientApplicationFlags() *flag.FlagSet {

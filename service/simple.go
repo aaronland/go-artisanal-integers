@@ -70,3 +70,15 @@ func (svc *SimpleService) NextInt() (int64, error) {
 func (svc *SimpleService) LastInt() (int64, error) {
 	return svc.engine.LastInt()
 }
+
+func (svc *SimpleService) SetLastInt(i int64) error {
+	return svc.engine.SetLastInt(i)
+}
+
+func (svc *SimpleService) SetOffset(i int64) error {
+	return svc.engine.SetOffset(i)
+}
+
+func (svc *SimpleService) SetIncrement(i int64) error {
+	return svc.engine.SetIncrement(i)
+}

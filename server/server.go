@@ -73,7 +73,7 @@ func (svr *ArtisanalServer) ListenAndServe(ctx context.Context, mux http.Handler
 		integer_path = fmt.Sprintf("/%s", integer_path)
 	}
 
-	mux.Handle(integer_path, integer_handler)
+	mux.(*http.ServeMux).Handle(integer_path, integer_handler)
 
 	return svr.server.ListenAndServe(ctx, mux)
 }
