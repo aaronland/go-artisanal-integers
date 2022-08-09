@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"errors"
+	"github.com/aaronland/go-artisanal-integers"
 	"github.com/aaronland/go-artisanal-integers/engine"
-	"github.com/aaronland/go-artisanal-integers/utils"
 	"net/url"
 )
 
@@ -60,7 +60,7 @@ func (svc *SimpleService) NextInt() (int64, error) {
 		return -1, err
 	}
 
-	if utils.IsLondonInteger(i) {
+	if artisanalinteger.IsLondonInteger(i) {
 		return svc.NextInt()
 	}
 

@@ -1,4 +1,4 @@
-package utils
+package artisanalinteger
 
 import (
 	_ "log"
