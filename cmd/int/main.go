@@ -13,7 +13,7 @@ import (
 
 func main() {
 
-	var service_uri = flag.String("service-uri", "memory://", "The data source name (dsn) for connecting to the artisanal integer service.")
+	var service_uri = flag.String("service-uri", "memory://", "")
 	var continuous = flag.Bool("continuous", false, "Continuously mint integers. This is mostly only useful for debugging.")
 
 	flag.Parse()
@@ -23,7 +23,7 @@ func main() {
 	s, err := service.NewService(ctx, *service_uri)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create new service, %v", err)
 	}
 
 	writers := []io.Writer{
@@ -38,7 +38,7 @@ func main() {
 		next, err := s.NextInt(ctx)
 
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Failed to retrieve next integer, %w", err)
 		}
 
 		str_next := strconv.FormatInt(next, 10)

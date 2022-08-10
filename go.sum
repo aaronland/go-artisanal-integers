@@ -1,5 +1,3 @@
-github.com/aaronland/go-http-ping/v2 v2.0.0 h1:PO/CfpNwxPSMqEuDAA+2/IzSoArAa/0deSHCmCuvfiA=
-github.com/aaronland/go-http-ping/v2 v2.0.0/go.mod h1:fXKuw0WvfXMyt09ibXILN4LzEIhCnxoAhmZqoC5iBm8=
 github.com/aaronland/go-http-server v1.0.0 h1:AF+4JLEyXNj7Mulpcx8yaek1RWGojWOQMg5vinEDDVs=
 github.com/aaronland/go-http-server v1.0.0/go.mod h1:gJ2TDOB9EhK8IULIf3UqVYcv1TaEa5N2er9YaBvD2M0=
 github.com/aaronland/go-roster v1.0.0 h1:FRDGrTqsYySKjWnAhbBGXyeGlI/o5/t9FZYCbUmyQtI=
@@ -12,6 +10,8 @@ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/sfomuseum/go-flags v0.8.3 h1:rclKNzfBgN8nfS5qKjMUo8ymQ4mrH4KaEMFQRAT98m8=
+github.com/sfomuseum/go-flags v0.8.3/go.mod h1:VXOnnX1/yxQpX2yiwHaBV6aCmhtszQOL5bL1/nNo3co=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=

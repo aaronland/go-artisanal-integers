@@ -1,21 +1,21 @@
-package http
+package api
 
 import (
 	"github.com/aaronland/go-artisanal-integers/service"
-	gohttp "net/http"
+	"net/http"
 	"strconv"
 )
 
-func IntegerHandler(s service.Service) (gohttp.HandlerFunc, error) {
+func IntegerHandler(s service.Service) (http.HandlerFunc, error) {
 
-	fn := func(rsp gohttp.ResponseWriter, req *gohttp.Request) {
+	fn := func(rsp http.ResponseWriter, req *http.Request) {
 
 		ctx := req.Context()
 
 		next, err := s.NextInt(ctx)
 
 		if err != nil {
-			gohttp.Error(rsp, err.Error(), gohttp.StatusBadRequest)
+			http.Error(rsp, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -29,6 +29,6 @@ func IntegerHandler(s service.Service) (gohttp.HandlerFunc, error) {
 		rsp.Write(b)
 	}
 
-	h := gohttp.HandlerFunc(fn)
+	h := http.HandlerFunc(fn)
 	return h, nil
 }

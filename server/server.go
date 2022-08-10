@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
-	aa_http "github.com/aaronland/go-artisanal-integers/http"
+	"github.com/aaronland/go-artisanal-integers/http/api"
 	"github.com/aaronland/go-artisanal-integers/service"
 	aa_server "github.com/aaronland/go-http-server"
 	_ "log"
@@ -36,10 +36,10 @@ func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, erro
 		return nil, fmt.Errorf("Missing ?service= parameter")
 	}
 
-	db, err := service.NewService(ctx, service_uri)
+	svc, err := service.NewService(ctx, service_uri)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create new integer service, %w", err)
 	}
 
 	u.RawQuery = q.Encode()
@@ -48,12 +48,12 @@ func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, erro
 	aa_svr, err := aa_server.NewServer(ctx, uri)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create new server, %w", err)
 	}
 
 	svr := &ArtisanalServer{
 		server:  aa_svr,
-		service: db,
+		service: svc,
 		url:     u,
 	}
 
@@ -66,10 +66,10 @@ func (svr *ArtisanalServer) Address() string {
 
 func (svr *ArtisanalServer) ListenAndServe(ctx context.Context, mux http.Handler) error {
 
-	integer_handler, err := aa_http.IntegerHandler(svr.service)
+	integer_handler, err := api.IntegerHandler(svr.service)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to create integer handler, %w", err)
 	}
 
 	integer_path := svr.url.Path
