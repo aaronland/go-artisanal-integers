@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"github.com/aaronland/go-artisanal-integers/client"
 	"github.com/sfomuseum/go-flags/flagset"
-	"github.com/aaronland/go-artisanal-integers/client"	
+	"log"
 )
 
 var client_uri string

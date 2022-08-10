@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/sfomuseum/go-flags/flagset"
 	"github.com/aaronland/go-artisanal-integers/server"
-	"net/http"
+	"github.com/sfomuseum/go-flags/flagset"
 	"log"
 )
 
@@ -19,18 +18,16 @@ func main() {
 	flagset.Parse(fs)
 
 	ctx := context.Background()
-	
-	s, err := server.NewArtisanalServer(ctx, server_uri)
+
+	s, err := server.NewArtisanalIntegerServer(ctx, server_uri)
 
 	if err != nil {
 		log.Fatalf("Failed to create new server, %v", err)
 	}
 
 	log.Printf("Listen on %s\n", s.Address())
-	
-	mux := http.NewServeMux()
 
-	err = s.ListenAndServe(ctx, mux)
+	err = s.ListenAndServe(ctx)
 
 	if err != nil {
 		log.Fatalf("Failed to serve requests, %v", err)

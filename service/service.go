@@ -23,7 +23,7 @@ type ServiceInitializeFunc func(ctx context.Context, uri string) (Service, error
 
 var services roster.Roster
 
-func ensureSpatialRoster() error {
+func ensureServiceRoster() error {
 
 	if services == nil {
 
@@ -41,7 +41,7 @@ func ensureSpatialRoster() error {
 
 func RegisterService(ctx context.Context, scheme string, f ServiceInitializeFunc) error {
 
-	err := ensureSpatialRoster()
+	err := ensureServiceRoster()
 
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func Schemes() []string {
 	ctx := context.Background()
 	schemes := []string{}
 
-	err := ensureSpatialRoster()
+	err := ensureServiceRoster()
 
 	if err != nil {
 		return schemes

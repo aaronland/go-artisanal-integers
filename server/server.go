@@ -3,82 +3,90 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/aaronland/go-artisanal-integers/http/api"
-	"github.com/aaronland/go-artisanal-integers/service"
-	aa_server "github.com/aaronland/go-http-server"
-	_ "log"
-	"net/http"
+	"github.com/aaronland/go-roster"
 	"net/url"
+	"sort"
 	"strings"
 )
 
-type ArtisanalServer struct {
-	aa_server.Server
-	server  aa_server.Server
-	service service.Service
-	url     *url.URL
+type ArtisanalIntegerServer interface {
+	Address() string
+	ListenAndServe(context.Context, ...interface{}) error
 }
 
-func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, error) {
+type ServerInitializeFunc func(ctx context.Context, uri string) (ArtisanalIntegerServer, error)
+
+var servers roster.Roster
+
+func ensureServerRoster() error {
+
+	if servers == nil {
+
+		r, err := roster.NewDefaultRoster()
+
+		if err != nil {
+			return err
+		}
+
+		servers = r
+	}
+
+	return nil
+}
+
+func RegisterServer(ctx context.Context, scheme string, f ServerInitializeFunc) error {
+
+	err := ensureServerRoster()
+
+	if err != nil {
+		return err
+	}
+
+	return servers.Register(ctx, scheme, f)
+}
+
+func Schemes() []string {
+
+	ctx := context.Background()
+	schemes := []string{}
+
+	err := ensureServerRoster()
+
+	if err != nil {
+		return schemes
+	}
+
+	for _, dr := range servers.Drivers(ctx) {
+		scheme := fmt.Sprintf("%s://", strings.ToLower(dr))
+		schemes = append(schemes, scheme)
+	}
+
+	sort.Strings(schemes)
+	return schemes
+}
+
+func NewArtisanalIntegerServer(ctx context.Context, uri string) (ArtisanalIntegerServer, error) {
 
 	u, err := url.Parse(uri)
 
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse URL, %w", err)
+		return nil, err
 	}
 
-	q := u.Query()
+	scheme := u.Scheme
 
-	service_uri := q.Get("service")
-	q.Del("service")
-
-	if service_uri == "" {
-		return nil, fmt.Errorf("Missing ?service= parameter")
-	}
-
-	svc, err := service.NewService(ctx, service_uri)
+	i, err := servers.Driver(ctx, scheme)
 
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create new integer service, %w", err)
+		return nil, err
 	}
 
-	u.RawQuery = q.Encode()
-	uri = u.String()
-
-	aa_svr, err := aa_server.NewServer(ctx, uri)
+	f := i.(ServerInitializeFunc)
+	s, err := f(ctx, uri)
 
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create new server, %w", err)
+		return nil, err
 	}
 
-	svr := &ArtisanalServer{
-		server:  aa_svr,
-		service: svc,
-		url:     u,
-	}
-
-	return svr, nil
-}
-
-func (svr *ArtisanalServer) Address() string {
-	return svr.server.Address()
-}
-
-func (svr *ArtisanalServer) ListenAndServe(ctx context.Context, mux http.Handler) error {
-
-	integer_handler, err := api.IntegerHandler(svr.service)
-
-	if err != nil {
-		return fmt.Errorf("Failed to create integer handler, %w", err)
-	}
-
-	integer_path := svr.url.Path
-
-	if !strings.HasPrefix(integer_path, "/") {
-		integer_path = fmt.Sprintf("/%s", integer_path)
-	}
-
-	mux.(*http.ServeMux).Handle(integer_path, integer_handler)
-
-	return svr.server.ListenAndServe(ctx, mux)
+	return s, nil
 }

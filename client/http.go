@@ -12,7 +12,7 @@ import (
 
 type HTTPClient struct {
 	Client
-	url *url.URL
+	url         *url.URL
 	http_client *http.Client
 }
 
@@ -44,9 +44,9 @@ func NewHTTPClient(ctx context.Context, uri string) (Client, error) {
 	}
 
 	http_cl := &http.Client{}
-	
+
 	cl := &HTTPClient{
-		url: u,
+		url:         u,
 		http_client: http_cl,
 	}
 
@@ -60,7 +60,7 @@ func (cl *HTTPClient) NextInt(ctx context.Context) (int64, error) {
 	if err != nil {
 		return -1, fmt.Errorf("Failed to create integer request, %w", err)
 	}
-	
+
 	rsp, err := cl.http_client.Do(req)
 
 	if err != nil {
