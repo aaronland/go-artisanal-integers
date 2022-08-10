@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"flag"
-	"github.com/aaronland/go-artisanal-integers/engine"
+	"github.com/aaronland/go-artisanal-integers/database"
 	"io"
 	"log"
 	"os"
@@ -13,48 +13,17 @@ import (
 
 func main() {
 
-	var engine_uri = flag.String("engine-uri", "memory://", "The data source name (dsn) for connecting to the artisanal integer engine.")
-
-	var last = flag.Int("set-last-int", 0, "Set the last known integer.")
-	var offset = flag.Int("set-offset", 0, "Set the offset used to mint integers.")
-	var increment = flag.Int("set-increment", 0, "Set the increment used to mint integers.")
+	var database_uri = flag.String("database-uri", "memory://", "The data source name (dsn) for connecting to the artisanal integer database.")
 	var continuous = flag.Bool("continuous", false, "Continuously mint integers. This is mostly only useful for debugging.")
 
 	flag.Parse()
 
 	ctx := context.Background()
 
-	eng, err := engine.NewEngine(ctx, *engine_uri)
+	db, err := database.NewDatabase(ctx, *database_uri)
 
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	if *last != 0 {
-
-		err = eng.SetLastInt(int64(*last))
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if *increment != 0 {
-
-		err = eng.SetIncrement(int64(*increment))
-
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if *offset != 0 {
-
-		err = eng.SetOffset(int64(*offset))
-
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
 
 	writers := []io.Writer{
@@ -66,7 +35,7 @@ func main() {
 
 	for {
 
-		next, err := eng.NextInt()
+		next, err := db.NextInt(ctx)
 
 		if err != nil {
 			log.Fatal(err)

@@ -1,4 +1,4 @@
-package engine
+package database
 
 import (
 	"context"
@@ -12,8 +12,8 @@ import (
 	"sync"
 )
 
-type FSEngine struct {
-	Engine
+type FSDatabase struct {
+	Database
 	key       string
 	offset    int64
 	increment int64
@@ -23,7 +23,7 @@ type FSEngine struct {
 func init() {
 
 	ctx := context.Background()
-	err := RegisterEngine(ctx, "fs", NewFSEngine)
+	err := RegisterDatabase(ctx, "fs", NewFSDatabase)
 
 	if err != nil {
 		panic(err)
@@ -31,7 +31,7 @@ func init() {
 
 }
 
-func NewFSEngine(ctx context.Context, uri string) (Engine, error) {
+func NewFSDatabase(ctx context.Context, uri string) (Database, error) {
 
 	u, err := url.Parse(uri)
 
@@ -71,19 +71,25 @@ func NewFSEngine(ctx context.Context, uri string) (Engine, error) {
 
 	mu := new(sync.Mutex)
 
-	eng := FSEngine{
+	db := &FSDatabase{
 		key:       abs_path,
 		increment: 2,
 		offset:    1,
 		mu:        mu,
 	}
 
-	return &eng, nil
+	err = SetParametersFromURI(ctx, db, uri)
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to set parameters, %w", err)
+	}
+
+	return db, nil
 }
 
-func (eng *FSEngine) SetLastInt(i int64) error {
+func (db *FSDatabase) SetLastInt(ctx context.Context, i int64) error {
 
-	last, err := eng.LastInt()
+	last, err := db.LastInt(ctx)
 
 	if err != nil {
 		return err
@@ -93,49 +99,44 @@ func (eng *FSEngine) SetLastInt(i int64) error {
 		return errors.New("integer value too small")
 	}
 
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
+	db.mu.Lock()
+	defer db.mu.Unlock()
 
-	return write_int(eng.key, i)
+	return write_int(db.key, i)
 }
 
-func (eng *FSEngine) SetKey(k string) error {
-	// FIX ME
+func (db *FSDatabase) SetOffset(ctx context.Context, i int64) error {
+	db.offset = i
 	return nil
 }
 
-func (eng *FSEngine) SetOffset(i int64) error {
-	eng.offset = i
+func (db *FSDatabase) SetIncrement(ctx context.Context, i int64) error {
+	db.increment = i
 	return nil
 }
 
-func (eng *FSEngine) SetIncrement(i int64) error {
-	eng.increment = i
-	return nil
+func (db *FSDatabase) LastInt(ctx context.Context) (int64, error) {
+
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	return read_int(db.key)
 }
 
-func (eng *FSEngine) LastInt() (int64, error) {
+func (db *FSDatabase) NextInt(ctx context.Context) (int64, error) {
 
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
+	db.mu.Lock()
+	defer db.mu.Unlock()
 
-	return read_int(eng.key)
-}
-
-func (eng *FSEngine) NextInt() (int64, error) {
-
-	eng.mu.Lock()
-	defer eng.mu.Unlock()
-
-	i, err := read_int(eng.key)
+	i, err := read_int(db.key)
 
 	if err != nil {
 		return -1, err
 	}
 
-	i = i + eng.increment
+	i = i + db.increment
 
-	err = write_int(eng.key, i)
+	err = write_int(db.key, i)
 
 	if err != nil {
 		return -1, err
@@ -144,7 +145,7 @@ func (eng *FSEngine) NextInt() (int64, error) {
 	return i, nil
 }
 
-func (eng *FSEngine) Close() error {
+func (db *FSDatabase) Close(ctx context.Context) error {
 	return nil
 }
 

@@ -1,35 +1,39 @@
-package service
+package database
 
 import (
 	"context"
 	"testing"
 )
 
-func TestSimpleService(t *testing.T) {
+func TestSimpleDatabase(t *testing.T) {
 
 	ctx := context.Background()
 
-	uri := "simple://?engine=memory://"
+	uri := "memory://"
 
-	s, err := NewService(ctx, uri)
+	s, err := NewDatabase(ctx, uri)
 
 	if err != nil {
-		t.Fatalf("Failed to create service for %s, %v", uri, err)
+		t.Fatalf("Failed to create database for %s, %v", uri, err)
 	}
 
-	err = s.SetOffset(2)
+	offset := int64(2)
+	increment := int64(2)
+	last := int64(20)
+	
+	err = s.SetOffset(offset)
 
 	if err != nil {
 		t.Fatalf("Failed to set offset, %v", err)
 	}
 
-	err = s.SetIncrement(2)
+	err = s.SetIncrement(increment)
 
 	if err != nil {
 		t.Fatalf("Failed to set increment, %v", err)
 	}
 
-	err = s.SetLastInt(20)
+	err = s.SetLastInt(last)
 
 	if err != nil {
 		t.Fatalf("Failed to set last int, %v", err)
@@ -41,7 +45,7 @@ func TestSimpleService(t *testing.T) {
 		t.Fatalf("Failed to get last int, %v", err)
 	}
 
-	if i != 20 {
+	if i != last {
 		t.Fatalf("Unexpected last int: %d", i)
 	}
 

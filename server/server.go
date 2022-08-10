@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	aa_http "github.com/aaronland/go-artisanal-integers/http"
-	"github.com/aaronland/go-artisanal-integers/service"
+	"github.com/aaronland/go-artisanal-integers/database"
 	aa_server "github.com/aaronland/go-http-server"
 	_ "log"
 	"net/http"
@@ -13,8 +13,9 @@ import (
 )
 
 type ArtisanalServer struct {
+	aa_server.Server
 	server  aa_server.Server
-	service service.Service
+	database database.Database
 	url     *url.URL
 }
 
@@ -28,18 +29,22 @@ func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, erro
 
 	q := u.Query()
 
-	service_uri := q.Get("service")
-
-	if service_uri == "" {
-		return nil, fmt.Errorf("Missing ?service= parameter")
+	database_uri := q.Get("database")
+	q.Del("database")
+	
+	if database_uri == "" {
+		return nil, fmt.Errorf("Missing ?database= parameter")
 	}
 
-	svc, err := service.NewService(ctx, service_uri)
+	db, err := database.NewDatabase(ctx, database_uri)
 
 	if err != nil {
 		return nil, err
 	}
 
+	u.RawQuery = q.Encode()
+	uri = u.String()
+	
 	aa_svr, err := aa_server.NewServer(ctx, uri)
 
 	if err != nil {
@@ -48,7 +53,7 @@ func NewArtisanalServer(ctx context.Context, uri string) (aa_server.Server, erro
 
 	svr := &ArtisanalServer{
 		server:  aa_svr,
-		service: svc,
+		database: db,
 		url:     u,
 	}
 
@@ -61,7 +66,7 @@ func (svr *ArtisanalServer) Address() string {
 
 func (svr *ArtisanalServer) ListenAndServe(ctx context.Context, mux http.Handler) error {
 
-	integer_handler, err := aa_http.IntegerHandler(svr.service)
+	integer_handler, err := aa_http.IntegerHandler(svr.database)
 
 	if err != nil {
 		return err

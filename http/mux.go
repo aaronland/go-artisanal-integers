@@ -2,16 +2,16 @@ package http
 
 import (
 	"fmt"
-	"github.com/aaronland/go-artisanal-integers/service"
+	"github.com/aaronland/go-artisanal-integers/database"
 	"github.com/aaronland/go-http-ping/v2"
 	gohttp "net/http"
 	"net/url"
 	"strings"
 )
 
-func NewServeMux(s service.Service, u *url.URL) (*gohttp.ServeMux, error) {
+func NewServeMux(db database.Database, u *url.URL) (*gohttp.ServeMux, error) {
 
-	integer_handler, err := IntegerHandler(s)
+	integer_handler, err := IntegerHandler(db)
 
 	if err != nil {
 		return nil, err
