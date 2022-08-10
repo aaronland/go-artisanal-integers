@@ -2,54 +2,9 @@
 
 No, really.
 
-## Usage
+## Documentation
 
-## Interfaces
-
-### Client
-
-```
-type Client interface {
-	NextInt() (int64, error)
-}
-```
-
-### Engine
-
-An "engine" is the interface between your code and an underlying data model (typically a database) for minting artisanal integers. The interface looks like this:
-
-```
-type Engine interface {
-	NextInt() (int64, error)
-	LastInt() (int64, error)
-	SetLastInt(int64) error
-	SetKey(string) error
-	SetOffset(int64) error
-	SetIncrement(int64) error
-	Close() error
-}
-```
-
-### Service
-
-```
-type Service interface {
-	NextInt() (int64, error)
-	LastInt() (int64, error)
-}
-```
-
-### Server
-
-```
-type Server interface {
-	ListenAndServe(Service) error
-}
-```
-
-## Tools
-
-Everything is in flux. This will be updated soon.
+Documentation is incomplete at this time.
 
 ## Engines
 
