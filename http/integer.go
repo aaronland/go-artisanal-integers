@@ -1,18 +1,18 @@
 package http
 
 import (
-	"github.com/aaronland/go-artisanal-integers/database"
+	"github.com/aaronland/go-artisanal-integers/service"
 	gohttp "net/http"
 	"strconv"
 )
 
-func IntegerHandler(db database.Database) (gohttp.HandlerFunc, error) {
+func IntegerHandler(s service.Service) (gohttp.HandlerFunc, error) {
 
 	fn := func(rsp gohttp.ResponseWriter, req *gohttp.Request) {
 
 		ctx := req.Context()
-		
-		next, err := db.NextInt(ctx)
+
+		next, err := s.NextInt(ctx)
 
 		if err != nil {
 			gohttp.Error(rsp, err.Error(), gohttp.StatusBadRequest)

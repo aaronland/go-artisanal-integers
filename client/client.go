@@ -10,14 +10,14 @@ import (
 )
 
 type Client interface {
-	NextInt() (int64, error)
+	NextInt(context.Context) (int64, error)
 }
 
 type ClientInitializeFunc func(ctx context.Context, uri string) (Client, error)
 
 var clients roster.Roster
 
-func ensureSpatialRoster() error {
+func ensureClientRoster() error {
 
 	if clients == nil {
 
@@ -35,7 +35,7 @@ func ensureSpatialRoster() error {
 
 func RegisterClient(ctx context.Context, scheme string, f ClientInitializeFunc) error {
 
-	err := ensureSpatialRoster()
+	err := ensureClientRoster()
 
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func Schemes() []string {
 	ctx := context.Background()
 	schemes := []string{}
 
-	err := ensureSpatialRoster()
+	err := ensureClientRoster()
 
 	if err != nil {
 		return schemes

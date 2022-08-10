@@ -48,7 +48,7 @@ func NewHTTPClient(ctx context.Context, uri string) (Client, error) {
 	return cl, nil
 }
 
-func (cl *HTTPClient) NextInt() (int64, error) {
+func (cl *HTTPClient) NextInt(ctx context.Context) (int64, error) {
 
 	rsp, err := http.Get(cl.url.String())
 

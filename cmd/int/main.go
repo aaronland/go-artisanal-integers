@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"flag"
-	"github.com/aaronland/go-artisanal-integers/database"
+	"github.com/aaronland/go-artisanal-integers/service"
 	"io"
 	"log"
 	"os"
@@ -13,14 +13,14 @@ import (
 
 func main() {
 
-	var database_uri = flag.String("database-uri", "memory://", "The data source name (dsn) for connecting to the artisanal integer database.")
+	var service_uri = flag.String("service-uri", "memory://", "The data source name (dsn) for connecting to the artisanal integer service.")
 	var continuous = flag.Bool("continuous", false, "Continuously mint integers. This is mostly only useful for debugging.")
 
 	flag.Parse()
 
 	ctx := context.Background()
 
-	db, err := database.NewDatabase(ctx, *database_uri)
+	s, err := service.NewService(ctx, *service_uri)
 
 	if err != nil {
 		log.Fatal(err)
@@ -35,7 +35,7 @@ func main() {
 
 	for {
 
-		next, err := db.NextInt(ctx)
+		next, err := s.NextInt(ctx)
 
 		if err != nil {
 			log.Fatal(err)
