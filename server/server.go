@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-type ArtisanalIntegerServer interface {
+type Server interface {
 	Address() string
 	ListenAndServe(context.Context, ...interface{}) error
 }
 
-type ServerInitializeFunc func(ctx context.Context, uri string) (ArtisanalIntegerServer, error)
+type ServerInitializeFunc func(ctx context.Context, uri string) (Server, error)
 
 var servers roster.Roster
 
@@ -65,7 +65,7 @@ func Schemes() []string {
 	return schemes
 }
 
-func NewArtisanalIntegerServer(ctx context.Context, uri string) (ArtisanalIntegerServer, error) {
+func NewServer(ctx context.Context, uri string) (Server, error) {
 
 	u, err := url.Parse(uri)
 

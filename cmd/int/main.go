@@ -38,7 +38,7 @@ func main() {
 		next, err := s.NextInt(ctx)
 
 		if err != nil {
-			log.Fatalf("Failed to retrieve next integer, %w", err)
+			log.Fatalf("Failed to retrieve next integer, %v", err)
 		}
 
 		str_next := strconv.FormatInt(next, 10)

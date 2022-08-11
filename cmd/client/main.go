@@ -23,13 +23,13 @@ func main() {
 	cl, err := client.NewClient(ctx, client_uri)
 
 	if err != nil {
-		log.Fatalf("Failed to create new client, %w", err)
+		log.Fatalf("Failed to create new client, %v", err)
 	}
 
 	i, err := cl.NextInt(ctx)
 
 	if err != nil {
-		log.Fatalf("Failed to get next integer, %w", err)
+		log.Fatalf("Failed to get next integer, %v", err)
 	}
 
 	fmt.Printf("%d", i)

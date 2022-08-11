@@ -6,12 +6,6 @@ No, really.
 
 Documentation is incomplete at this time.
 
-## Engines
-
-* https://github.com/aaronland/go-artisanal-integers-mysql
-* https://github.com/aaronland/go-artisanal-integers-redis
-* https://github.com/aaronland/go-artisanal-integers-rqlite
-* https://github.com/aaronland/go-artisanal-integers-summitdb
 
 ## See also
 

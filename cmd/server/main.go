@@ -19,7 +19,7 @@ func main() {
 
 	ctx := context.Background()
 
-	s, err := server.NewArtisanalIntegerServer(ctx, server_uri)
+	s, err := server.NewServer(ctx, server_uri)
 
 	if err != nil {
 		log.Fatalf("Failed to create new server, %v", err)

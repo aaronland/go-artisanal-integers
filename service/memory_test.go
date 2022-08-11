@@ -21,25 +21,25 @@ func TestSimpleService(t *testing.T) {
 	increment := int64(2)
 	last := int64(20)
 
-	err = s.SetOffset(offset)
+	err = s.SetOffset(ctx, offset)
 
 	if err != nil {
 		t.Fatalf("Failed to set offset, %v", err)
 	}
 
-	err = s.SetIncrement(increment)
+	err = s.SetIncrement(ctx, increment)
 
 	if err != nil {
 		t.Fatalf("Failed to set increment, %v", err)
 	}
 
-	err = s.SetLastInt(last)
+	err = s.SetLastInt(ctx, last)
 
 	if err != nil {
 		t.Fatalf("Failed to set last int, %v", err)
 	}
 
-	i, err := s.LastInt()
+	i, err := s.LastInt(ctx)
 
 	if err != nil {
 		t.Fatalf("Failed to get last int, %v", err)
@@ -49,7 +49,7 @@ func TestSimpleService(t *testing.T) {
 		t.Fatalf("Unexpected last int: %d", i)
 	}
 
-	i, err = s.NextInt()
+	i, err = s.NextInt(ctx)
 
 	if err != nil {
 		t.Fatalf("Failed to get next int, %v", err)

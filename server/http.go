@@ -12,8 +12,8 @@ import (
 	"strings"
 )
 
-type HTTPArtisanalIntegerServer struct {
-	ArtisanalIntegerServer
+type HTTPServer struct {
+	Server
 	server  aa_server.Server
 	service service.Service
 	url     *url.URL
@@ -25,11 +25,11 @@ func init() {
 
 	for _, s := range aa_server.Schemes() {
 		s = strings.Replace(s, "://", "", 1)
-		RegisterServer(ctx, s, NewHTTPArtisanalIntegerServer)
+		RegisterServer(ctx, s, NewHTTPServer)
 	}
 }
 
-func NewHTTPArtisanalIntegerServer(ctx context.Context, uri string) (ArtisanalIntegerServer, error) {
+func NewHTTPServer(ctx context.Context, uri string) (Server, error) {
 
 	u, err := url.Parse(uri)
 
@@ -61,7 +61,7 @@ func NewHTTPArtisanalIntegerServer(ctx context.Context, uri string) (ArtisanalIn
 		return nil, fmt.Errorf("Failed to create new server, %w", err)
 	}
 
-	svr := &HTTPArtisanalIntegerServer{
+	svr := &HTTPServer{
 		server:  aa_svr,
 		service: svc,
 		url:     u,
@@ -70,11 +70,11 @@ func NewHTTPArtisanalIntegerServer(ctx context.Context, uri string) (ArtisanalIn
 	return svr, nil
 }
 
-func (svr *HTTPArtisanalIntegerServer) Address() string {
+func (svr *HTTPServer) Address() string {
 	return svr.server.Address()
 }
 
-func (svr *HTTPArtisanalIntegerServer) ListenAndServe(ctx context.Context, args ...interface{}) error {
+func (svr *HTTPServer) ListenAndServe(ctx context.Context, args ...interface{}) error {
 
 	mux := http.NewServeMux()
 
