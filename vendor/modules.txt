@@ -1,17 +1,6 @@
-# github.com/aaronland/go-http-server v1.0.0
-## explicit
-github.com/aaronland/go-http-server
 # github.com/aaronland/go-roster v1.0.0
 ## explicit
 github.com/aaronland/go-roster
-# github.com/akrylysov/algnhsa v0.12.1
-github.com/akrylysov/algnhsa
-# github.com/aws/aws-lambda-go v1.9.0
-github.com/aws/aws-lambda-go/events
-github.com/aws/aws-lambda-go/lambda
-github.com/aws/aws-lambda-go/lambda/handlertrace
-github.com/aws/aws-lambda-go/lambda/messages
-github.com/aws/aws-lambda-go/lambdacontext
 # github.com/sfomuseum/go-flags v0.8.3
 ## explicit
 github.com/sfomuseum/go-flags/flagset

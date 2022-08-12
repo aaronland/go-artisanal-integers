@@ -6,6 +6,15 @@ No, really.
 
 Documentation is incomplete at this time.
 
+## Clients and Servers
+
+* https://github.com/aaronland/go-artisanal-integers-http
+* https://github.com/aaronland/go-artisanal-integers-grpc
+
+## Services
+
+* https://github.com/aaronland/go-artisanal-integers-mysql
+* https://github.com/aaronland/go-artisanal-integers-redis
 
 ## See also
 
